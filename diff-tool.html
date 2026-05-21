@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UpCodes Text Diff Tool</title>
+    
+    <!-- Tab Bar Favicon Configuration Target -->
+    <link rel="icon" type="image/png" href="upcodes2.png">
+    
+    <style>
+        :root {
+            /* --- Premium Light Mode Canvas Palette (Linear-inspired) --- */
+            --bg-canvas: #f9fafb;
+            --bg-surface: #ffffff;
+            --bg-surface-glass: rgba(255, 255, 255, 0.75);
+            --border-muted: #e5e7eb;
+            --border-intense: #d1d5db;
+            
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --text-ghost: #94a3b8;
+            
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --primary-glow: rgba(37, 99, 235, 0.15);
+            
+            --diff-add-bg: rgba(34, 197, 94, 0.12);
+            --diff-add-text: #166534;
+            --diff-add-border: rgba(34, 197, 94, 0.3);
+            
+            --diff-remove-bg: rgba(239, 68, 68, 0.08);
+            --diff-remove-text: #991b1b;
+            --diff-remove-border: rgba(239, 68, 68, 0.25);
+            
+            --diff-mod-bg: rgba(234, 179, 8, 0.12);
+            --diff-mod-text: #854d0e;
+            --diff-mod-border: rgba(234, 179, 8, 0.3);
+
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.04), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+            --radius-lg: 12px;
+            --radius-md: 8px;
+            --radius-sm: 6px;
+            --transition-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        [data-theme="dark"] {
+            /* --- Premium Dark Mode Canvas Palette (Notion/Linear-inspired) --- */
+            --bg-canvas: #0b0f19;
+            --bg-surface: #131c2e;
+            --bg-surface-glass: rgba(19, 28, 46, 0.75);
+            --border-muted: #1e293b;
+            --border-intense: #334155;
+            
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --text-ghost: #64748b;
+            
+            --primary: #3b82f6;
+            --primary-hover: #60a5fa;
+            --primary-glow: rgba(59, 131, 246, 0.25);
+            
+            --diff-add-bg: rgba(16, 185, 129, 0.15);
+            --diff-add-text: #a7f3d0;
+            --diff-add-border: rgba(16, 185, 129, 0.4);
+            
+            --diff-remove-bg: rgba(239, 68, 68, 0.15);
+            --diff-remove-text: #fecaca;
+            --diff-remove-border: rgba(239, 68, 68, 0.4);
+            
+            --diff-mod-bg: rgba(234, 179, 8, 0.15);
+            --diff-mod-text: #fef08a;
+            --diff-mod-border: rgba(234, 179, 8, 0.4);
+
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-canvas);
+            color: var(--text-main);
+            transition: background-color 0.4s var(--transition-smooth), color 0.4s var(--transition-smooth);
+            line-height: 1.6;
+            padding: 24px;
+        }
+
+        .container {
+            max-width: 1440px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* --- Header Navigation Interface Layout --- */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-muted);
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .brand-container {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo-frame {
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2px;
+            border-radius: var(--radius-sm);
+        }
+
+        .app-logo {
+            max-height: 100%;
+            max-width: 180px;
+            object-fit: contain;
+        }
+
+        .brand-separator {
+            width: 1px;
+            height: 28px;
+            background-color: var(--border-muted);
+        }
+
+        .brand-text-block {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .company-name-text {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            letter-spacing: -0.015em;
+        }
+
+        .app-title-text {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        /* --- Global Button Design Specifications --- */
+        .btn {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-intense);
+            color: var(--text-main);
+            padding: 8px 14px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 550;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s var(--transition-smooth);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn:hover {
+            background-color: var(--bg-canvas);
+            border-color: var(--text-ghost);
+            transform: translateY(-1px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:focus-visible {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: #ffffff;
+            border: none;
+            box-shadow: 0 2px 4px 0 var(--primary-glow);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+            color: #ffffff;
+            box-shadow: 0 4px 12px 0 var(--primary-glow);
+        }
+
+        /* --- Glassmorphic Sticky Toolbar Control Rack --- */
+        .controls-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            background: var(--bg-surface-glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 14px 20px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            position: sticky;
+            top: 16px;
+            z-index: 100;
+            border: 1px solid var(--border-muted);
+            transition: border-color 0.3s ease;
+        }
+
+        .controls-left, .controls-right {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .btn-group .btn {
+            border: none;
+            box-shadow: none;
+            padding: 6px 12px;
+            background: transparent;
+            color: black;
+        }
+
+        .btn-group .btn {
+            border: none;
+            box-shadow: none;
+            padding: 6px 12px;
+            background: transparent;
+        }
+
+        .btn-group .btn:hover {
+            background: var(--bg-surface);
+            border-radius: var(--radius-sm);
+        }
+
+        .settings-group {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            border-left: 1px solid var(--border-muted);
+            padding-left: 20px;
+        }
+
+        @media (max-width: 1024px) {
+            .settings-group {
+                border-left: none;
+                padding-left: 0;
+                width: 100%;
+            }
+            .controls-row {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .controls-right {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 550;
+            cursor: pointer;
+            user-select: none;
+            transition: color 0.2s ease;
+        }
+
+        .toggle-container:hover {
+            color: var(--text-main);
+        }
+
+        .toggle-container input {
+            cursor: pointer;
+            appearance: none;
+            width: 32px;
+            height: 18px;
+            background-color: var(--border-intense);
+            border-radius: 10px;
+            position: relative;
+            transition: background-color 0.2s var(--transition-smooth);
+            outline: none;
+        }
+
+        .toggle-container input::before {
+            content: "";
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: white;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.2s var(--transition-smooth);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .toggle-container input:checked {
+            background-color: var(--primary);
+        }
+
+        .toggle-container input:checked::before {
+            transform: translateX(14px);
+        }
+
+        /* --- Split-Screen Workspace Cards Layout --- */
+        .workspace {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .workspace {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background: var(--bg-surface);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-muted);
+            box-shadow: var(--shadow-md);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: box-shadow 0.3s ease, border-color 0.3s ease;
+        }
+
+        .panel:focus-within {
+            border-color: var(--text-ghost);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .panel-header {
+            padding: 14px 20px;
+            background: var(--bg-canvas);
+            border-bottom: 1px solid var(--border-muted);
+            font-weight: 650;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* --- Rich Text Formatting Ribbon Interface --- */
+        .rt-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            padding: 8px 16px;
+            background: var(--bg-surface);
+            border-bottom: 1px solid var(--border-muted);
+            align-items: center;
+        }
+
+        .rt-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.95rem;
+            transition: all 0.15s ease;
+        }
+
+        .rt-btn:hover {
+            background: var(--bg-canvas);
+            color: var(--text-main);
+        }
+
+        .rt-select {
+            background: var(--bg-canvas);
+            border: 1px solid var(--border-muted);
+            color: var(--text-muted);
+            padding: 4px 8px;
+            border-radius: var(--radius-sm);
+            font-size: 0.8rem;
+            font-weight: 500;
+            outline: none;
+            cursor: pointer;
+            transition: border-color 0.2s ease;
+        }
+
+        .rt-select:hover {
+            border-color: var(--border-intense);
+            color: var(--text-main);
+        }
+
+        /* --- Interactive Native Sandbox Context Area --- */
+        .editor-container {
+            display: flex;
+            position: relative;
+            height: 400px;
+        }
+
+        .line-numbers {
+            width: 46px;
+            padding: 16px 0;
+            background: var(--bg-canvas);
+            border-right: 1px solid var(--border-muted);
+            color: var(--text-ghost);
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 0.8rem;
+            text-align: right;
+            padding-right: 12px;
+            user-select: none;
+            overflow: hidden;
+            line-height: 1.65;
+        }
+
+        .editor {
+            flex: 1;
+            padding: 16px 20px;
+            overflow-y: auto;
+            outline: none;
+            font-size: 0.975rem;
+            line-height: 1.65;
+            min-height: 100%;
+            background: var(--bg-surface);
+            color: var(--text-main);
+        }
+
+        /* --- Analytical Differential Execution Cards Section --- */
+        .report-section {
+            background: var(--bg-surface);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-muted);
+            box-shadow: var(--shadow-md);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .report-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            letter-spacing: -0.015em;
+        }
+
+        .active-badges {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            background: var(--bg-canvas);
+            border: 1px solid var(--border-muted);
+            color: var(--text-muted);
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .badge.active {
+            background: rgba(37, 99, 235, 0.08);
+            border-color: rgba(37, 99, 235, 0.25);
+            color: var(--primary);
+        }
+
+        .legend {
+            display: flex;
+            gap: 20px;
+            font-size: 0.825rem;
+            font-weight: 550;
+            color: var(--text-muted);
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-color {
+            width: 14px;
+            height: 14px;
+            border-radius: 4px;
+            border: 1px solid var(--border-muted);
+        }
+
+        .diff-output-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            border-top: 1px solid var(--border-muted);
+            padding-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .diff-output-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .diff-view {
+            padding: 16px 20px;
+            background: var(--bg-canvas);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-muted);
+            min-height: 180px;
+            overflow-y: auto;
+            max-height: 450px;
+            line-height: 1.65;
+            font-size: 0.975rem;
+            white-space: pre-wrap;
+        }
+
+        /* --- Dynamic Highlight Differential Classes --- */
+        .diff-added {
+            background-color: var(--diff-add-bg) !important;
+            color: var(--diff-add-text) !important;
+            border-bottom: 1px solid var(--diff-add-border);
+            text-decoration: none;
+            padding: 1px 3px;
+            border-radius: 3px;
+            font-weight: 500;
+        }
+
+        .diff-removed {
+            background-color: var(--diff-remove-bg) !important;
+            color: var(--diff-remove-text) !important;
+            border-bottom: 1px solid var(--diff-remove-border);
+            text-decoration: line-through;
+            padding: 1px 3px;
+            border-radius: 3px;
+        }
+
+        .diff-modified {
+            background-color: var(--diff-mod-bg) !important;
+            color: var(--diff-mod-text) !important;
+            border-bottom: 2px dashed var(--diff-mod-border);
+            padding: 1px 3px;
+            border-radius: 3px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Corporate Identity Application Header -->
+    <header>
+        <div class="brand-container">
+            <div class="logo-frame">
+                <img id="companyLogoElement" class="app-logo" src="upcodes.png">
+            </div>
+            <div class="brand-separator"></div>
+            <div class="brand-text-block">
+                <span id="companyNameElement" class="company-name-text">Company Name</span>
+                <span class="app-title-text">Text Diff Tool</span>
+            </div>
+        </div>
+        <button class="btn" id="themeToggle" onclick="toggleTheme()" aria-label="Toggle interface color mode">🌓 Theme</button>
+    </header>
+
+    <!-- Master Glassmorphic Settings Controls Toolbar -->
+    <div class="controls-row">
+        <div class="controls-left">
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="compareDocs()">🔍 Compare</button>
+                <button class="btn" onclick="swapDocs()">🔄 Swap</button>
+                <button class="btn" onclick="clearDocs()">🧹 Clear</button>
+            </div>
+
+            <div class="settings-group">
+                <label class="toggle-container">
+                    <input type="checkbox" id="replaceBreaksToggle" onchange="onSettingChange()">
+                    Replace line breaks
+                </label>
+                <label class="toggle-container">
+                    <input type="checkbox" id="trimWhitespaceToggle" onchange="onSettingChange()">
+                    Trim Whitespace
+                </label>
+            </div>
+        </div>
+
+        <div class="controls-right">
+            <div class="toggle-container">
+                <input type="checkbox" id="realtimeToggle" onchange="toggleRealtime(this)">
+                <label for="realtimeToggle">Real-time tracking</label>
+            </div>
+            <div class="toggle-container">
+                <input type="checkbox" id="syncScrollToggle" checked>
+                <label for="syncScrollToggle">Sync Scroll</label>
+            </div>
+        </div>
+    </div>
+
+    <!-- Document Editors Split Workspace -->
+    <div class="workspace">
+        <!-- Document A Panel (Original Canvas) -->
+        <div class="panel">
+            <div class="panel-header">
+                <span>DOCUMENT A &bull; ORIGINAL ARCHIVE</span>
+                <input type="file" id="fileA" accept=".txt,.html" style="display:none" onchange="handleFileUpload(this, 'editorA')">
+                <button class="btn" style="padding:5px 10px; font-size:0.75rem; border-radius: var(--radius-sm);" onclick="document.getElementById('fileA').click()">📁 Upload Asset</button>
+            </div>
+            
+            <div class="rt-toolbar">
+                <button class="rt-btn" onclick="format('bold')" title="Bold">B</button>
+                <button class="rt-btn" onclick="format('italic')" style="font-style: italic;" title="Italic">I</button>
+                <button class="rt-btn" onclick="format('underline')" style="text-decoration: underline;" title="Underline">U</button>
+                <select class="rt-select" onchange="format('fontSize', this.value)">
+                    <option value="3">Size Regular</option>
+                    <option value="2">Small</option>
+                    <option value="5">Large</option>
+                    <option value="7">Huge</option>
+                </select>
+                <select class="rt-select" onchange="format('fontName', this.value)">
+                    <option value="Arial">Arial</option>
+                    <option value="Courier New">Courier</option>
+                    <option value="Georgia">Georgia</option>
+                </select>
+                <select class="rt-select" onchange="format('foreColor', this.value)">
+                    <option value="#0f172a">Default Hue</option>
+                    <option value="#ef4444">Red Accent</option>
+                    <option value="#10b981">Green Accent</option>
+                    <option value="#3b82f6">Blue Accent</option>
+                </select>
+            </div>
+
+            <div class="editor-container">
+                <div class="line-numbers" id="linesA">1<br>2<br>3</div>
+                <div class="editor" id="editorA" contenteditable="true" oninput="onEditorInput()" tabindex="0"></div>
+            </div>
+        </div>
+
+        <!-- Document B Panel (Modified Canvas) -->
+        <div class="panel">
+            <div class="panel-header">
+                <span>DOCUMENT B &bull; MODIFIED VARIATION</span>
+                <input type="file" id="fileB" accept=".txt,.html" style="display:none" onchange="handleFileUpload(this, 'editorB')">
+                <button class="btn" style="padding:5px 10px; font-size:0.75rem; border-radius: var(--radius-sm);" onclick="document.getElementById('fileB').click()">📁 Upload Asset</button>
+            </div>
+            
+            <div class="rt-toolbar">
+                <button class="rt-btn" onclick="format('bold')" title="Bold">B</button>
+                <button class="rt-btn" onclick="format('italic')" style="font-style: italic;" title="Italic">I</button>
+                <button class="rt-btn" onclick="format('underline')" style="text-decoration: underline;" title="Underline">U</button>
+                <select class="rt-select" onchange="format('fontSize', this.value)">
+                    <option value="3">Size Regular</option>
+                    <option value="2">Small</option>
+                    <option value="5">Large</option>
+                    <option value="7">Huge</option>
+                </select>
+                <select class="rt-select" onchange="format('fontName', this.value)">
+                    <option value="Arial">Arial</option>
+                    <option value="Courier New">Courier</option>
+                    <option value="Georgia">Georgia</option>
+                </select>
+                <select class="rt-select" onchange="format('foreColor', this.value)">
+                    <option value="#0f172a">Default Hue</option>
+                    <option value="#ef4444">Red Accent</option>
+                    <option value="#10b981">Green Accent</option>
+                    <option value="#3b82f6">Blue Accent</option>
+                </select>
+            </div>
+
+            <div class="editor-container">
+                <div class="line-numbers" id="linesB">1<br>2<br>3</div>
+                <div class="editor" id="editorB" contenteditable="true" oninput="onEditorInput()" tabindex="0"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Visual Differential Report Output Presentation Card -->
+    <div class="report-section">
+        <div class="report-title">
+            <span>Visual Delta Analysis</span>
+            <button class="btn btn-primary" style="padding: 8px 16px; font-size:0.8rem;" onclick="exportHTML()">📥 Export Distribution Build</button>
+        </div>
+
+        <div class="active-badges" id="activeBadgesContainer">
+            <span class="badge" id="badgeBreaks">Replace Line Breaks: Off</span>
+            <span class="badge" id="badgeWhitespace">Trim Whitespace: Off</span>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item"><div class="legend-color" style="background: var(--diff-add-bg); border-color: var(--diff-add-border)"></div> Content Additions</div>
+            <div class="legend-item"><div class="legend-color" style="background: var(--diff-remove-bg); border-color: var(--diff-remove-border)"></div> Content Deletions</div>
+            <div class="legend-item"><div class="legend-color" style="background: var(--diff-mod-bg); border-color: var(--diff-mod-border)"></div> Formatting Shifts</div>
+        </div>
+
+        <div class="diff-output-grid">
+            <div>
+                <h4 style="font-size:0.75rem; color: var(--text-muted); letter-spacing:0.05em; margin-bottom: 8px; text-transform: uppercase;">A Delta Map &bull; Removals</h4>
+                <div class="diff-view" id="diffOutputA"></div>
+            </div>
+            <div>
+                <h4 style="font-size:0.75rem; color: var(--text-muted); letter-spacing:0.05em; margin-bottom: 8px; text-transform: uppercase;">B Delta Map &bull; Additions</h4>
+                <div class="diff-view" id="diffOutputB"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // =========================================================================
+    // 🏢 CENTRAL BRANDING CONFIGURATION OBJECT
+    // =========================================================================
+    const BRAND_CONFIG = {
+        companyName: "UpCodes",
+        
+        // High-contrast clean vector placeholder logos
+        logoUrlLight: "upcodes.png", 
+        logoUrlDark: "upcodes.png",
+        
+        svgFallback: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232563eb'><path d='M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z'/></svg>"
+    };
+    // =========================================================================
+
+    let isRealtime = false;
+
+    window.addEventListener('DOMContentLoaded', () => {
+        initBranding();
+        document.getElementById('editorA').innerHTML = `<div>Welcome to the <b>Rich Text</b> comparison tool.</div>\n<div>This has\nline breaks and   multiple   spaces.</div>`;
+        document.getElementById('editorB').innerHTML = `<div>Welcome to the <i>Rich Text</i> comparison tool.</div><div>This has line breaks and multiple spaces.</div>`;
+        updateLineNumbers('editorA', 'linesA');
+        updateLineNumbers('editorB', 'linesB');
+        compareDocs();
+    });
+
+    function initBranding() {
+        const logoImg = document.getElementById('companyLogoElement');
+        const nameSpan = document.getElementById('companyNameElement');
+        
+        nameSpan.textContent = BRAND_CONFIG.companyName;
+        
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        const targetedSource = isDark ? (BRAND_CONFIG.logoUrlDark || BRAND_CONFIG.logoUrlLight) : BRAND_CONFIG.logoUrlLight;
+
+        logoImg.src = targetedSource || BRAND_CONFIG.svgFallback;
+        logoImg.onerror = function() { this.src = BRAND_CONFIG.svgFallback; };
+    }
+
+    function format(command, value = null) {
+        document.execCommand(command, false, value);
+        onEditorInput();
+    }
+
+    function toggleTheme() {
+        const root = document.documentElement;
+        const currentTheme = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        root.setAttribute('data-theme', currentTheme);
+        
+        const logoImg = document.getElementById('companyLogoElement');
+        const targetedSource = (currentTheme === 'dark') ? (BRAND_CONFIG.logoUrlDark || BRAND_CONFIG.logoUrlLight) : BRAND_CONFIG.logoUrlLight;
+        logoImg.src = targetedSource || BRAND_CONFIG.svgFallback;
+    }
+
+    function toggleRealtime(checkbox) {
+        isRealtime = checkbox.checked;
+        if (isRealtime) compareDocs();
+    }
+
+    function onEditorInput() {
+        updateLineNumbers('editorA', 'linesA');
+        updateLineNumbers('editorB', 'linesB');
+        if (isRealtime) compareDocs();
+    }
+
+    function onSettingChange() {
+        updateReportBadges();
+        compareDocs();
+    }
+
+    function updateReportBadges() {
+        const replaceBreaks = document.getElementById('replaceBreaksToggle').checked;
+        const trimWhitespace = document.getElementById('trimWhitespaceToggle').checked;
+
+        const bBreaks = document.getElementById('badgeBreaks');
+        bBreaks.textContent = replaceBreaks ? "Replace Line Breaks: Active" : "Replace Line Breaks: Off";
+        replaceBreaks ? bBreaks.classList.add('active') : bBreaks.classList.remove('active');
+
+        const bWhitespace = document.getElementById('badgeWhitespace');
+        bWhitespace.textContent = trimWhitespace ? "Trim Whitespace: Active" : "Trim Whitespace: Off";
+        trimWhitespace ? bWhitespace.classList.add('active') : bWhitespace.classList.remove('active');
+    }
+
+    function clearDocs() {
+        document.getElementById('editorA').innerHTML = '';
+        document.getElementById('editorB').innerHTML = '';
+        document.getElementById('diffOutputA').innerHTML = '';
+        document.getElementById('diffOutputB').innerHTML = '';
+        updateLineNumbers('editorA', 'linesA');
+        updateLineNumbers('editorB', 'linesB');
+    }
+
+    function swapDocs() {
+        const a = document.getElementById('editorA').innerHTML;
+        document.getElementById('editorA').innerHTML = document.getElementById('editorB').innerHTML;
+        document.getElementById('editorB').innerHTML = a;
+        onEditorInput();
+    }
+
+    function handleFileUpload(input, targetEditorId) {
+        const file = input.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById(targetEditorId).innerHTML = e.target.result;
+            onEditorInput();
+        };
+        reader.readAsText(file);
+    }
+
+    function updateLineNumbers(editorId, lineNumId) {
+        const editor = document.getElementById(editorId);
+        const linesDiv = document.getElementById(lineNumId);
+        const linesCount = Math.max(1, editor.innerText.split('\n').length);
+        linesDiv.innerHTML = Array.from({length: linesCount}, (_, i) => i + 1).join('<br>');
+    }
+
+    // --- Synchronized Scrolling Mechanism ---
+    const edA = document.getElementById('editorA');
+    const edB = document.getElementById('editorB');
+    function syncScroll(source, target) {
+        if (!document.getElementById('syncScrollToggle').checked) return;
+        const percentage = source.scrollTop / (source.scrollHeight - source.clientHeight);
+        target.scrollTop = percentage * (target.scrollHeight - target.clientHeight);
+    }
+    edA.addEventListener('scroll', () => syncScroll(edA, edB));
+    edB.addEventListener('scroll', () => syncScroll(edB, edA));
+
+
+    // --- Core Parser / Diff Engine Logic ---
+    function compareDocs() {
+        const rootA = document.getElementById('editorA');
+        const rootB = document.getElementById('editorB');
+
+        const replaceBreaks = document.getElementById('replaceBreaksToggle').checked;
+        const trimWhitespace = document.getElementById('trimWhitespaceToggle').checked;
+
+        let tokensA = flattenNodes(rootA);
+        let tokensB = flattenNodes(rootB);
+
+        tokensA = preprocessTokens(tokensA, replaceBreaks, trimWhitespace);
+        tokensB = preprocessTokens(tokensB, replaceBreaks, trimWhitespace);
+
+        const diffReport = computeDiff(tokensA, tokensB);
+
+        updateReportBadges();
+        renderDiffViews(diffReport);
+    }
+
+    function flattenNodes(element) {
+        let result = [];
+        
+        function recurse(node, activeStyles) {
+            if (node.nodeType === Node.TEXT_NODE) {
+                const textVal = node.nodeValue;
+                if(textVal.length > 0) {
+                    result.push({
+                        text: textVal,
+                        styles: { ...activeStyles }
+                    });
+                }
+            } else if (node.nodeType === Node.ELEMENT_NODE) {
+                const currentStyles = { ...activeStyles };
+                const tagName = node.tagName.toLowerCase();
+
+                if (tagName === 'b' || tagName === 'strong') currentStyles.bold = true;
+                if (tagName === 'i' || tagName === 'em') currentStyles.italic = true;
+                if (tagName === 'u') currentStyles.underline = true;
+                
+                if (node.style.fontWeight === 'bold' || parseInt(node.style.fontWeight) >= 700) currentStyles.bold = true;
+                if (node.style.fontStyle === 'italic') currentStyles.italic = true;
+                if (node.style.textDecoration.includes('underline')) currentStyles.underline = true;
+                if (node.style.fontSize) currentStyles.fontSize = node.style.fontSize;
+                if (node.style.fontFamily) currentStyles.fontFamily = node.style.fontFamily.replace(/['"]/g, '');
+                if (node.style.color) currentStyles.color = node.style.color;
+
+                if (node.getAttribute('color')) currentStyles.color = node.getAttribute('color');
+                if (node.getAttribute('face')) currentStyles.fontFamily = node.getAttribute('face');
+                if (node.getAttribute('size')) currentStyles.fontSize = node.getAttribute('size');
+
+                if ((tagName === 'div' || tagName === 'p' || tagName === 'br') && node !== element) {
+                    result.push({ text: '\n', styles: { ...currentStyles } });
+                }
+
+                node.childNodes.forEach(child => {
+                    if (child.nodeName.toLowerCase() !== 'br') {
+                        recurse(child, currentStyles);
+                    } else if (child.nodeType === Node.ELEMENT_NODE && child.tagName.toLowerCase() === 'br') {
+                        result.push({ text: '\n', styles: { ...currentStyles } });
+                    }
+                });
+            }
+        }
+        
+        recurse(element, {
+            bold: false, italic: false, underline: false,
+            fontSize: '', fontFamily: '', color: ''
+        });
+        return result;
+    }
+
+    function preprocessTokens(tokens, replaceBreaks, trimWhitespace) {
+        let processed = [];
+
+        tokens.forEach(tok => {
+            let workingText = tok.text;
+            if (replaceBreaks) workingText = workingText.replace(/[\r\n]+/g, ' ');
+            if (trimWhitespace) workingText = workingText.replace(/[ \t]+/g, ' ');
+
+            processed.push({
+                text: workingText,
+                styles: { ...tok.styles }
+            });
+        });
+
+        let atomicTokens = [];
+        processed.forEach(tok => {
+            const pieces = tok.text.split(/([ \n])/g);
+            pieces.forEach(p => {
+                if (p !== '') {
+                    atomicTokens.push({
+                        text: p,
+                        styles: { ...tok.styles }
+                    });
+                }
+            });
+        });
+
+        if (trimWhitespace) {
+            while (atomicTokens.length > 0 && atomicTokens[0].text === ' ') atomicTokens.shift();
+            while (atomicTokens.length > 0 && atomicTokens[atomicTokens.length - 1].text === ' ') atomicTokens.pop();
+            
+            let compressed = [];
+            for (let i = 0; i < atomicTokens.length; i++) {
+                if (atomicTokens[i].text === ' ' && compressed.length > 0 && compressed[compressed.length - 1].text === ' ') {
+                    continue;
+                }
+                compressed.push(atomicTokens[i]);
+            }
+            atomicTokens = compressed;
+        }
+
+        return atomicTokens;
+    }
+
+    function stylesMatch(s1, s2) {
+        return s1.bold === s2.bold &&
+               s1.italic === s2.italic &&
+               s1.underline === s2.underline &&
+               s1.fontSize === s2.fontSize &&
+               s1.fontFamily === s2.fontFamily &&
+               s1.color === s2.color;
+    }
+
+    function computeDiff(arrA, arrB) {
+        const N = arrA.length, M = arrB.length;
+        let dp = Array.from({ length: N + 1 }, () => Array(M + 1).fill(0));
+        
+        for (let i = 1; i <= N; i++) {
+            for (let j = 1; j <= M; j++) {
+                if (arrA[i - 1].text === arrB[j - 1].text && stylesMatch(arrA[i - 1].styles, arrB[j - 1].styles)) {
+                    dp[i][j] = dp[i - 1][j - 1] + 1;
+                } else {
+                    dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+                }
+            }
+        }
+
+        let i = N, j = M;
+        let outA = []; let outB = [];
+
+        while (i > 0 || j > 0) {
+            if (i > 0 && j > 0 && arrA[i - 1].text === arrB[j - 1].text && stylesMatch(arrA[i - 1].styles, arrB[j - 1].styles)) {
+                outA.unshift({ type: 'equal', item: arrA[i - 1] });
+                outB.unshift({ type: 'equal', item: arrB[j - 1] });
+                i--; j--;
+            } else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) {
+                if (i > 0 && arrA[i - 1].text === arrB[j - 1].text) {
+                    outA.unshift({ type: 'modified', item: arrA[i - 1] });
+                    outB.unshift({ type: 'modified', item: arrB[j - 1] });
+                    i--;
+                } else {
+                    outB.unshift({ type: 'added', item: arrB[j - 1] });
+                }
+                j--;
+            } else {
+                outA.unshift({ type: 'removed', item: arrA[i - 1] });
+                i--;
+            }
+        }
+        return { viewA: outA, viewB: outB };
+    }
+
+    function buildFormattedSpan(diffObj) {
+        const { type, item } = diffObj;
+        const span = document.createElement('span');
+        span.textContent = item.text;
+        
+        if (item.styles.bold) span.style.fontWeight = 'bold';
+        if (item.styles.italic) span.style.fontStyle = 'italic';
+        if (item.styles.underline) span.style.textDecoration = 'underline';
+        if (item.styles.fontSize) span.style.fontSize = item.styles.fontSize;
+        if (item.styles.fontFamily) span.style.fontFamily = item.styles.fontFamily;
+        if (item.styles.color) span.style.color = item.styles.color;
+
+        if (type === 'added') span.className = 'diff-added';
+        if (type === 'removed') span.className = 'diff-removed';
+        if (type === 'modified') span.className = 'diff-modified';
+
+        return span;
+    }
+
+    function renderDiffViews(diffReport) {
+        const outA = document.getElementById('diffOutputA');
+        const outB = document.getElementById('diffOutputB');
+        outA.innerHTML = ''; outB.innerHTML = '';
+        diffReport.viewA.forEach(obj => outA.appendChild(buildFormattedSpan(obj)));
+        diffReport.viewB.forEach(obj => outB.appendChild(buildFormattedSpan(obj)));
+    }
+
+    function exportHTML() {
+        const currentLogoPath = document.getElementById('companyLogoElement').src;
+        const currentCompanyName = document.getElementById('companyNameElement').textContent;
+
+        const reportData = `
+        <html>
+        <head>
+            <title>Branded Comparison Audit Report</title>
+            <style>
+                body { font-family: -apple-system, sans-serif; padding: 40px; background:#f9fafb; color:#0f172a;}
+                .brand-header { display: flex; align-items: center; gap: 16px; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #e5e7eb; }
+                .logo-frame { height: 38px; display: flex; align-items: center; justify-content: center; }
+                .logo-frame img { max-height: 100%; max-width: 180px; object-fit: contain; }
+                .brand-separator { width: 1px; height: 24px; background-color: #e5e7eb; }
+                .brand-title-text { display: flex; flex-direction: column; }
+                .company-name { font-size: 1.2rem; font-weight: 700; color: #0f172a; letter-spacing: -0.015em;}
+                .app-subtitle { font-size: 0.75rem; color: #475569; text-transform: uppercase; letter-spacing: 0.05em; font-weight:600;}
+                .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+                .panel { padding: 20px; background: white; border: 1px solid #e5e7eb; border-radius: 8px; white-space: pre-wrap; line-height: 1.65; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); font-size: 0.975rem; }
+                .diff-added { background-color: rgba(34, 197, 94, 0.12); color: #166534; border-bottom: 1px solid rgba(34, 197, 94, 0.3); padding: 1px 2px; border-radius:2px; }
+                .diff-removed { background-color: rgba(239, 68, 68, 0.08); color: #991b1b; text-decoration: line-through; border-bottom: 1px solid rgba(239, 68, 68, 0.25); padding: 1px 2px; border-radius:2px; }
+                .diff-modified { background-color: rgba(234, 179, 8, 0.12); color: #854d0e; border-bottom: 2px dashed rgba(234, 179, 8, 0.3); padding: 1px 2px; border-radius:2px; }
+                .header-meta { margin-bottom: 24px; font-size: 0.85rem; color: #475569; background: #ffffff; padding: 12px 16px; border-radius: 6px; border: 1px solid #e5e7eb; display: inline-block; }
+            </style>
+        </head>
+        <body>
+            <div class="brand-header">
+                <div class="logo-frame">
+                    <img src="${currentLogoPath}" alt="Brand Logo">
+                </div>
+                <div class="brand-separator"></div>
+                <div class="brand-title-text">
+                    <span class="company-name">${currentCompanyName}</span>
+                    <span class="app-subtitle">Rich Text Verification Summary Audit Log</span>
+                </div>
+            </div>
+            <div class="header-meta">
+                <strong>Execution Constraints:</strong> &bull; 
+                Line Breaks Filtered: <span>${document.getElementById('replaceBreaksToggle').checked ? "Active" : "Disabled"}</span> &bull; 
+                Whitespace Normalization: <span>${document.getElementById('trimWhitespaceToggle').checked ? "Active" : "Disabled"}</span>
+            </div>
+            <div class="grid">
+                <div><h3 style="font-size:0.85rem; text-transform:uppercase; color:#475569; margin-bottom:8px; letter-spacing:0.05em;">Original Document Frame (Removals)</h3><div class="panel">${document.getElementById('diffOutputA').innerHTML}</div></div>
+                <div><h3 style="font-size:0.85rem; text-transform:uppercase; color:#475569; margin-bottom:8px; letter-spacing:0.05em;">Modified Document Frame (Additions)</h3><div class="panel">${document.getElementById('diffOutputB').innerHTML}</div></div>
+            </div>
+        </body>
+        </html>`;
+        
+        const blob = new Blob([reportData], { type: 'text/html' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'diff-branded-report.html';
+        link.click();
+    }
+</script>
+</body>
+</html>
