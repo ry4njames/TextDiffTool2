@@ -3,1115 +3,1605 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UpCodes Text Diff Tool</title>
-    
-    <!-- Tab Bar Favicon Configuration Target -->
+    <title>UpCodes · Text Diff</title>
     <link rel="icon" type="image/png" href="upcodes2.png">
-    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+
     <style>
-        :root {
-            /* --- Premium Light Mode Canvas Palette (Linear-inspired) --- */
-            --bg-canvas: #f9fafb;
-            --bg-surface: #ffffff;
-            --bg-surface-glass: rgba(255, 255, 255, 0.75);
-            --border-muted: #e5e7eb;
-            --border-intense: #d1d5db;
-            
-            --text-main: #0f172a;
-            --text-muted: #475569;
-            --text-ghost: #94a3b8;
-            
-            --primary: #2563eb;
-            --primary-hover: #1d4ed8;
-            --primary-glow: rgba(37, 99, 235, 0.15);
-            
-            --diff-add-bg: rgba(34, 197, 94, 0.12);
-            --diff-add-text: #166534;
-            --diff-add-border: rgba(34, 197, 94, 0.3);
-            
-            --diff-remove-bg: rgba(239, 68, 68, 0.08);
-            --diff-remove-text: #991b1b;
-            --diff-remove-border: rgba(239, 68, 68, 0.25);
-            
-            --diff-mod-bg: rgba(234, 179, 8, 0.12);
-            --diff-mod-text: #854d0e;
-            --diff-mod-border: rgba(234, 179, 8, 0.3);
+    /* ============================================================
+       DESIGN TOKENS
+    ============================================================ */
+    :root {
+        --font-ui: "DM Sans", system-ui, sans-serif;
+        --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.04), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
-            --radius-lg: 12px;
-            --radius-md: 8px;
-            --radius-sm: 6px;
-            --transition-smooth: cubic-bezier(0.16, 1, 0.3, 1);
-        }
+        /* Surface */
+        --canvas:        #f4f5f7;
+        --surface:       #ffffff;
+        --surface-2:     #f8f9fb;
+        --surface-raised:#ffffff;
 
-        [data-theme="dark"] {
-            /* --- Premium Dark Mode Canvas Palette (Notion/Linear-inspired) --- */
-            --bg-canvas: #0b0f19;
-            --bg-surface: #131c2e;
-            --bg-surface-glass: rgba(19, 28, 46, 0.75);
-            --border-muted: #1e293b;
-            --border-intense: #334155;
-            
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --text-ghost: #64748b;
-            
-            --primary: #3b82f6;
-            --primary-hover: #60a5fa;
-            --primary-glow: rgba(59, 131, 246, 0.25);
-            
-            --diff-add-bg: rgba(16, 185, 129, 0.15);
-            --diff-add-text: #a7f3d0;
-            --diff-add-border: rgba(16, 185, 129, 0.4);
-            
-            --diff-remove-bg: rgba(239, 68, 68, 0.15);
-            --diff-remove-text: #fecaca;
-            --diff-remove-border: rgba(239, 68, 68, 0.4);
-            
-            --diff-mod-bg: rgba(234, 179, 8, 0.15);
-            --diff-mod-text: #fef08a;
-            --diff-mod-border: rgba(234, 179, 8, 0.4);
+        /* Borders */
+        --border:        #e4e6eb;
+        --border-strong: #cdd0d8;
 
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
-        }
+        /* Text */
+        --text-1: #111827;
+        --text-2: #4b5563;
+        --text-3: #9ca3af;
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
+        /* Brand */
+        --accent:        #2563eb;
+        --accent-hover:  #1d4ed8;
+        --accent-subtle: rgba(37,99,235,.08);
+        --accent-glow:   rgba(37,99,235,.18);
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background-color: var(--bg-canvas);
-            color: var(--text-main);
-            transition: background-color 0.4s var(--transition-smooth), color 0.4s var(--transition-smooth);
-            line-height: 1.6;
-            padding: 24px;
-        }
+        /* Diff */
+        --add-bg:    rgba(16,185,129,.10);
+        --add-text:  #065f46;
+        --add-line:  rgba(16,185,129,.35);
 
-        .container {
-            max-width: 1440px;
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-        }
+        --del-bg:    rgba(239,68,68,.08);
+        --del-text:  #991b1b;
+        --del-line:  rgba(239,68,68,.28);
 
-        /* --- Header Navigation Interface Layout --- */
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-bottom: 20px;
-            border-bottom: 1px solid var(--border-muted);
-            flex-wrap: wrap;
-            gap: 20px;
-        }
+        --mod-bg:    rgba(245,158,11,.10);
+        --mod-text:  #78350f;
+        --mod-line:  rgba(245,158,11,.35);
 
-        .brand-container {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
+        /* Shadows */
+        --shadow-xs: 0 1px 2px rgba(0,0,0,.04);
+        --shadow-sm: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+        --shadow-md: 0 4px 8px rgba(0,0,0,.06), 0 2px 4px rgba(0,0,0,.04);
+        --shadow-lg: 0 12px 28px rgba(0,0,0,.08), 0 4px 8px rgba(0,0,0,.04);
 
-        .logo-frame {
-            height: 38px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 2px;
-            border-radius: var(--radius-sm);
-        }
+        /* Radii */
+        --r-sm: 6px;
+        --r-md: 8px;
+        --r-lg: 12px;
+        --r-xl: 16px;
 
-        .app-logo {
-            max-height: 100%;
-            max-width: 180px;
-            object-fit: contain;
-        }
+        /* Motion */
+        --ease-out: cubic-bezier(0.16,1,0.3,1);
+        --ease-in-out: cubic-bezier(0.4,0,0.2,1);
+        --dur-fast: 120ms;
+        --dur-base: 200ms;
+        --dur-slow: 350ms;
+    }
 
-        .brand-separator {
-            width: 1px;
-            height: 28px;
-            background-color: var(--border-muted);
-        }
+    [data-theme="dark"] {
+        --canvas:        #0d1117;
+        --surface:       #161b27;
+        --surface-2:     #1c2233;
+        --surface-raised:#1c2233;
 
-        .brand-text-block {
-            display: flex;
-            flex-direction: column;
-        }
+        --border:        #222d42;
+        --border-strong: #2d3a52;
 
-        .company-name-text {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--text-main);
-            letter-spacing: -0.015em;
-        }
+        --text-1: #f0f4ff;
+        --text-2: #8b97b5;
+        --text-3: #4a5568;
 
-        .app-title-text {
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-        }
+        --accent:       #4f8ef7;
+        --accent-hover: #6ba3f8;
+        --accent-subtle: rgba(79,142,247,.12);
+        --accent-glow:   rgba(79,142,247,.25);
 
-        /* --- Global Button Design Specifications --- */
-        .btn {
-            background-color: var(--bg-surface);
-            border: 1px solid var(--border-intense);
-            color: var(--text-main);
-            padding: 8px 14px;
-            border-radius: var(--radius-md);
-            cursor: pointer;
-            font-size: 0.875rem;
-            font-weight: 550;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.2s var(--transition-smooth);
-            box-shadow: var(--shadow-sm);
-        }
+        --add-bg:    rgba(16,185,129,.12);
+        --add-text:  #6ee7b7;
+        --add-line:  rgba(16,185,129,.35);
 
-        .btn:hover {
-            background-color: var(--bg-canvas);
-            border-color: var(--text-ghost);
-            transform: translateY(-1px);
-        }
+        --del-bg:    rgba(239,68,68,.12);
+        --del-text:  #fca5a5;
+        --del-line:  rgba(239,68,68,.35);
 
-        .btn:active {
-            transform: translateY(0);
-        }
+        --mod-bg:    rgba(245,158,11,.12);
+        --mod-text:  #fcd34d;
+        --mod-line:  rgba(245,158,11,.35);
 
-        .btn:focus-visible {
-            outline: 2px solid var(--primary);
-            outline-offset: 2px;
-        }
+        --shadow-xs: 0 1px 2px rgba(0,0,0,.3);
+        --shadow-sm: 0 1px 3px rgba(0,0,0,.3), 0 1px 2px rgba(0,0,0,.2);
+        --shadow-md: 0 4px 8px rgba(0,0,0,.25), 0 2px 4px rgba(0,0,0,.2);
+        --shadow-lg: 0 12px 28px rgba(0,0,0,.4), 0 4px 8px rgba(0,0,0,.25);
+    }
 
-        .btn-primary {
-            background-color: var(--primary);
-            color: #ffffff;
-            border: none;
-            box-shadow: 0 2px 4px 0 var(--primary-glow);
-        }
+    /* ============================================================
+       RESET & BASE
+    ============================================================ */
+    *, *::before, *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
 
-        .btn-primary:hover {
-            background-color: var(--primary-hover);
-            color: #ffffff;
-            box-shadow: 0 4px 12px 0 var(--primary-glow);
-        }
+    html {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        font-size: 15px;
+    }
 
-        /* --- Glassmorphic Sticky Toolbar Control Rack --- */
-        .controls-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 16px;
-            background: var(--bg-surface-glass);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            padding: 14px 20px;
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-md);
-            position: sticky;
-            top: 16px;
-            z-index: 100;
-            border: 1px solid var(--border-muted);
-            transition: border-color 0.3s ease;
-        }
+    body {
+        font-family: var(--font-ui);
+        background: var(--canvas);
+        color: var(--text-1);
+        line-height: 1.6;
+        transition: background var(--dur-slow) var(--ease-in-out),
+                    color var(--dur-slow) var(--ease-in-out);
+        min-height: 100vh;
+    }
 
-        .controls-left, .controls-right {
-            display: flex;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 16px;
-        }
+    /* ============================================================
+       LAYOUT SHELL
+    ============================================================ */
+    .app-shell {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
 
-        .btn-group .btn {
-            border: none;
-            box-shadow: none;
-            padding: 6px 12px;
-            background: transparent;
-            color: black;
-        }
+    /* ============================================================
+       TOPBAR
+    ============================================================ */
+    .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 200;
+        height: 56px;
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        box-shadow: var(--shadow-xs);
+        display: flex;
+        align-items: center;
+        padding: 0 20px;
+        gap: 16px;
+        transition: background var(--dur-slow) var(--ease-in-out),
+                    border-color var(--dur-slow) var(--ease-in-out);
+    }
 
-        .btn-group .btn {
-            border: none;
-            box-shadow: none;
-            padding: 6px 12px;
-            background: transparent;
-        }
+    .topbar-brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-shrink: 0;
+    }
 
-        .btn-group .btn:hover {
-            background: var(--bg-surface);
-            border-radius: var(--radius-sm);
-        }
+    .brand-logo-wrap {
+        height: 28px;
+        display: flex;
+        align-items: center;
+    }
 
-        .settings-group {
-            display: flex;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 20px;
-            border-left: 1px solid var(--border-muted);
-            padding-left: 20px;
-        }
+    .brand-logo-wrap img {
+        max-height: 28px;
+        max-width: 130px;
+        object-fit: contain;
+    }
 
-        @media (max-width: 1024px) {
-            .settings-group {
-                border-left: none;
-                padding-left: 0;
-                width: 100%;
-            }
-            .controls-row {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            .controls-right {
-                width: 100%;
-                justify-content: space-between;
-            }
-        }
+    .brand-divider {
+        width: 1px;
+        height: 20px;
+        background: var(--border-strong);
+    }
 
-        .toggle-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            font-weight: 550;
-            cursor: pointer;
-            user-select: none;
-            transition: color 0.2s ease;
-        }
+    .brand-label {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+    }
 
-        .toggle-container:hover {
-            color: var(--text-main);
-        }
+    .brand-name {
+        font-size: 0.875rem;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        color: var(--text-1);
+        line-height: 1;
+    }
 
-        .toggle-container input {
-            cursor: pointer;
-            appearance: none;
-            width: 32px;
-            height: 18px;
-            background-color: var(--border-intense);
-            border-radius: 10px;
-            position: relative;
-            transition: background-color 0.2s var(--transition-smooth);
-            outline: none;
-        }
+    .brand-sub {
+        font-size: 0.65rem;
+        font-weight: 500;
+        color: var(--text-3);
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        line-height: 1;
+    }
 
-        .toggle-container input::before {
-            content: "";
-            position: absolute;
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            background: white;
-            top: 2px;
-            left: 2px;
-            transition: transform 0.2s var(--transition-smooth);
-            box-shadow: var(--shadow-sm);
-        }
+    .topbar-spacer { flex: 1; }
 
-        .toggle-container input:checked {
-            background-color: var(--primary);
-        }
+    .topbar-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
 
-        .toggle-container input:checked::before {
-            transform: translateX(14px);
-        }
+    /* ============================================================
+       BUTTONS
+    ============================================================ */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-family: var(--font-ui);
+        font-size: 0.8125rem;
+        font-weight: 500;
+        line-height: 1;
+        padding: 0 12px;
+        height: 32px;
+        border-radius: var(--r-md);
+        border: 1px solid var(--border);
+        background: var(--surface);
+        color: var(--text-1);
+        cursor: pointer;
+        white-space: nowrap;
+        transition: background var(--dur-fast) var(--ease-out),
+                    border-color var(--dur-fast) var(--ease-out),
+                    box-shadow var(--dur-fast) var(--ease-out),
+                    transform var(--dur-fast) var(--ease-out),
+                    color var(--dur-fast);
+        box-shadow: var(--shadow-xs);
+        text-decoration: none;
+        user-select: none;
+    }
 
-        /* --- Split-Screen Workspace Cards Layout --- */
-        .workspace {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
-        }
+    .btn:hover {
+        background: var(--surface-2);
+        border-color: var(--border-strong);
+        box-shadow: var(--shadow-sm);
+    }
 
-        @media (max-width: 768px) {
-            .workspace {
-                grid-template-columns: 1fr;
-            }
-        }
+    .btn:active { transform: scale(0.97); }
 
-        .panel {
-            background: var(--bg-surface);
-            border-radius: var(--radius-lg);
-            border: 1px solid var(--border-muted);
-            box-shadow: var(--shadow-md);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            transition: box-shadow 0.3s ease, border-color 0.3s ease;
-        }
+    .btn:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+    }
 
-        .panel:focus-within {
-            border-color: var(--text-ghost);
-            box-shadow: var(--shadow-lg);
-        }
+    .btn-primary {
+        background: var(--accent);
+        border-color: transparent;
+        color: #fff;
+        box-shadow: 0 1px 3px var(--accent-glow);
+    }
 
-        .panel-header {
-            padding: 14px 20px;
-            background: var(--bg-canvas);
-            border-bottom: 1px solid var(--border-muted);
-            font-weight: 650;
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            letter-spacing: 0.05em;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+    .btn-primary:hover {
+        background: var(--accent-hover);
+        box-shadow: 0 3px 10px var(--accent-glow);
+    }
 
-        /* --- Rich Text Formatting Ribbon Interface --- */
-        .rt-toolbar {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 4px;
-            padding: 8px 16px;
-            background: var(--bg-surface);
-            border-bottom: 1px solid var(--border-muted);
-            align-items: center;
-        }
+    .btn-ghost {
+        background: transparent;
+        border-color: transparent;
+        box-shadow: none;
+        color: var(--text-2);
+    }
 
-        .rt-btn {
-            background: transparent;
-            border: none;
-            color: var(--text-muted);
-            width: 32px;
-            height: 32px;
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 0.95rem;
-            transition: all 0.15s ease;
-        }
+    .btn-ghost:hover {
+        background: var(--surface-2);
+        color: var(--text-1);
+        border-color: var(--border);
+    }
 
-        .rt-btn:hover {
-            background: var(--bg-canvas);
-            color: var(--text-main);
-        }
+    .btn-sm {
+        height: 28px;
+        padding: 0 10px;
+        font-size: 0.75rem;
+        border-radius: var(--r-sm);
+    }
 
-        .rt-select {
-            background: var(--bg-canvas);
-            border: 1px solid var(--border-muted);
-            color: var(--text-muted);
-            padding: 4px 8px;
-            border-radius: var(--radius-sm);
-            font-size: 0.8rem;
-            font-weight: 500;
-            outline: none;
-            cursor: pointer;
-            transition: border-color 0.2s ease;
-        }
+    .btn-icon {
+        width: 32px;
+        padding: 0;
+        justify-content: center;
+    }
 
-        .rt-select:hover {
-            border-color: var(--border-intense);
-            color: var(--text-main);
-        }
+    /* ============================================================
+       TOOLBAR STRIP
+    ============================================================ */
+    .toolbar-strip {
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        padding: 0 20px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        min-height: 48px;
+        flex-wrap: wrap;
+        transition: background var(--dur-slow) var(--ease-in-out),
+                    border-color var(--dur-slow) var(--ease-in-out);
+    }
 
-        /* --- Interactive Native Sandbox Context Area --- */
-        .editor-container {
-            display: flex;
-            position: relative;
-            height: 400px;
-        }
+    .toolbar-group {
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        padding: 6px 0;
+    }
 
-        .line-numbers {
-            width: 46px;
-            padding: 16px 0;
-            background: var(--bg-canvas);
-            border-right: 1px solid var(--border-muted);
-            color: var(--text-ghost);
-            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-            font-size: 0.8rem;
-            text-align: right;
-            padding-right: 12px;
-            user-select: none;
-            overflow: hidden;
-            line-height: 1.65;
-        }
+    .toolbar-sep {
+        width: 1px;
+        height: 20px;
+        background: var(--border);
+        margin: 0 8px;
+        flex-shrink: 0;
+    }
 
-        .editor {
-            flex: 1;
-            padding: 16px 20px;
-            overflow-y: auto;
-            outline: none;
-            font-size: 0.975rem;
-            line-height: 1.65;
-            min-height: 100%;
-            background: var(--bg-surface);
-            color: var(--text-main);
-        }
+    .toolbar-label {
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: var(--text-3);
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        margin-right: 6px;
+    }
 
-        /* --- Analytical Differential Execution Cards Section --- */
-        .report-section {
-            background: var(--bg-surface);
-            border-radius: var(--radius-lg);
-            border: 1px solid var(--border-muted);
-            box-shadow: var(--shadow-md);
-            padding: 24px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
+    .toolbar-spacer { flex: 1; }
 
-        .report-title {
-            font-size: 1.25rem;
-            font-weight: 700;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 16px;
-            letter-spacing: -0.015em;
-        }
+    /* Segmented control */
+    .seg-ctrl {
+        display: flex;
+        background: var(--canvas);
+        border: 1px solid var(--border);
+        border-radius: var(--r-md);
+        padding: 3px;
+        gap: 2px;
+    }
 
-        .active-badges {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
+    .seg-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-family: var(--font-ui);
+        font-size: 0.8125rem;
+        font-weight: 500;
+        padding: 0 10px;
+        height: 28px;
+        border-radius: 5px;
+        border: none;
+        background: transparent;
+        color: var(--text-2);
+        cursor: pointer;
+        transition: background var(--dur-fast), color var(--dur-fast), box-shadow var(--dur-fast);
+        white-space: nowrap;
+    }
 
-        .badge {
-            background: var(--bg-canvas);
-            border: 1px solid var(--border-muted);
-            color: var(--text-muted);
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            transition: all 0.2s ease;
-        }
+    .seg-btn.active {
+        background: var(--surface-raised);
+        color: var(--text-1);
+        box-shadow: var(--shadow-sm);
+    }
 
-        .badge.active {
-            background: rgba(37, 99, 235, 0.08);
-            border-color: rgba(37, 99, 235, 0.25);
-            color: var(--primary);
-        }
+    .seg-btn:hover:not(.active) {
+        background: var(--surface);
+        color: var(--text-1);
+    }
 
-        .legend {
-            display: flex;
-            gap: 20px;
-            font-size: 0.825rem;
-            font-weight: 550;
-            color: var(--text-muted);
-            flex-wrap: wrap;
-        }
+    /* Toggle switch */
+    .toggle-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        user-select: none;
+    }
 
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+    .toggle-row span {
+        font-size: 0.8125rem;
+        font-weight: 450;
+        color: var(--text-2);
+        transition: color var(--dur-fast);
+    }
 
-        .legend-color {
-            width: 14px;
-            height: 14px;
-            border-radius: 4px;
-            border: 1px solid var(--border-muted);
-        }
+    .toggle-row:hover span { color: var(--text-1); }
 
-        .diff-output-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
-            border-top: 1px solid var(--border-muted);
-            padding-top: 20px;
-        }
+    .toggle-switch {
+        appearance: none;
+        width: 34px;
+        height: 19px;
+        border-radius: 100px;
+        background: var(--border-strong);
+        position: relative;
+        cursor: pointer;
+        transition: background var(--dur-base) var(--ease-out);
+        flex-shrink: 0;
+        outline: none;
+    }
 
-        @media (max-width: 768px) {
-            .diff-output-grid {
-                grid-template-columns: 1fr;
-            }
-        }
+    .toggle-switch::after {
+        content: "";
+        position: absolute;
+        width: 15px;
+        height: 15px;
+        border-radius: 50%;
+        background: white;
+        top: 2px;
+        left: 2px;
+        transition: transform var(--dur-base) var(--ease-out);
+        box-shadow: 0 1px 3px rgba(0,0,0,.2);
+    }
 
-        .diff-view {
-            padding: 16px 20px;
-            background: var(--bg-canvas);
-            border-radius: var(--radius-md);
-            border: 1px solid var(--border-muted);
-            min-height: 180px;
-            overflow-y: auto;
-            max-height: 450px;
-            line-height: 1.65;
-            font-size: 0.975rem;
-            white-space: pre-wrap;
-        }
+    .toggle-switch:checked {
+        background: var(--accent);
+    }
 
-        /* --- Dynamic Highlight Differential Classes --- */
-        .diff-added {
-            background-color: var(--diff-add-bg) !important;
-            color: var(--diff-add-text) !important;
-            border-bottom: 1px solid var(--diff-add-border);
-            text-decoration: none;
-            padding: 1px 3px;
-            border-radius: 3px;
-            font-weight: 500;
-        }
+    .toggle-switch:checked::after {
+        transform: translateX(15px);
+    }
 
-        .diff-removed {
-            background-color: var(--diff-remove-bg) !important;
-            color: var(--diff-remove-text) !important;
-            border-bottom: 1px solid var(--diff-remove-border);
-            text-decoration: line-through;
-            padding: 1px 3px;
-            border-radius: 3px;
-        }
+    /* ============================================================
+       MAIN CONTENT AREA
+    ============================================================ */
+    .main-content {
+        flex: 1;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        max-width: 1600px;
+        width: 100%;
+        margin: 0 auto;
+    }
 
-        .diff-modified {
-            background-color: var(--diff-mod-bg) !important;
-            color: var(--diff-mod-text) !important;
-            border-bottom: 2px dashed var(--diff-mod-border);
-            padding: 1px 3px;
-            border-radius: 3px;
-            font-weight: 500;
-        }
+    /* ============================================================
+       WORKSPACE PANELS
+    ============================================================ */
+    .workspace-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    .doc-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--r-xl);
+        box-shadow: var(--shadow-sm);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        transition: border-color var(--dur-base) var(--ease-out),
+                    box-shadow var(--dur-base) var(--ease-out);
+    }
+
+    .doc-card:focus-within {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px var(--accent-subtle), var(--shadow-md);
+    }
+
+    /* Card header */
+    .card-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--border);
+        background: var(--surface-2);
+        flex-shrink: 0;
+    }
+
+    .card-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.6875rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        padding: 3px 8px;
+        border-radius: 100px;
+        flex-shrink: 0;
+    }
+
+    .card-badge.badge-a {
+        background: rgba(239,68,68,.1);
+        color: #b91c1c;
+        border: 1px solid rgba(239,68,68,.2);
+    }
+
+    [data-theme="dark"] .card-badge.badge-a {
+        background: rgba(239,68,68,.15);
+        color: #fca5a5;
+        border-color: rgba(239,68,68,.3);
+    }
+
+    .card-badge.badge-b {
+        background: rgba(16,185,129,.1);
+        color: #047857;
+        border: 1px solid rgba(16,185,129,.2);
+    }
+
+    [data-theme="dark"] .card-badge.badge-b {
+        background: rgba(16,185,129,.15);
+        color: #6ee7b7;
+        border-color: rgba(16,185,129,.3);
+    }
+
+    .card-title {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--text-2);
+        letter-spacing: -0.005em;
+        flex: 1;
+    }
+
+    /* Rich text toolbar inside card */
+    .rt-bar {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        padding: 6px 10px;
+        border-bottom: 1px solid var(--border);
+        background: var(--surface);
+        flex-wrap: wrap;
+    }
+
+    .rt-bar-sep {
+        width: 1px;
+        height: 16px;
+        background: var(--border);
+        margin: 0 4px;
+    }
+
+    .fmt-btn {
+        width: 28px;
+        height: 28px;
+        border-radius: var(--r-sm);
+        border: none;
+        background: transparent;
+        color: var(--text-2);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.875rem;
+        transition: background var(--dur-fast), color var(--dur-fast);
+        font-family: var(--font-ui);
+        font-weight: 600;
+    }
+
+    .fmt-btn:hover {
+        background: var(--canvas);
+        color: var(--text-1);
+    }
+
+    .fmt-btn:active { transform: scale(0.92); }
+
+    .fmt-select {
+        font-family: var(--font-ui);
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: var(--text-2);
+        background: transparent;
+        border: 1px solid transparent;
+        border-radius: var(--r-sm);
+        padding: 3px 6px;
+        cursor: pointer;
+        outline: none;
+        transition: background var(--dur-fast), border-color var(--dur-fast);
+        height: 28px;
+    }
+
+    .fmt-select:hover {
+        background: var(--canvas);
+        border-color: var(--border);
+    }
+
+    /* Editor area */
+    .editor-wrap {
+        display: flex;
+        flex: 1;
+        min-height: 0;
+        height: 360px;
+        position: relative;
+    }
+
+    .line-gutter {
+        width: 44px;
+        padding: 14px 0;
+        font-family: var(--font-mono);
+        font-size: 0.7rem;
+        font-weight: 400;
+        color: var(--text-3);
+        text-align: right;
+        padding-right: 10px;
+        background: var(--surface-2);
+        border-right: 1px solid var(--border);
+        user-select: none;
+        overflow: hidden;
+        line-height: 1.65;
+        flex-shrink: 0;
+    }
+
+    .doc-editor {
+        flex: 1;
+        padding: 14px 16px;
+        overflow-y: auto;
+        outline: none;
+        font-family: var(--font-ui);
+        font-size: 0.9375rem;
+        line-height: 1.65;
+        background: var(--surface);
+        color: var(--text-1);
+        scrollbar-width: thin;
+        scrollbar-color: var(--border-strong) transparent;
+    }
+
+    .doc-editor::-webkit-scrollbar { width: 6px; }
+    .doc-editor::-webkit-scrollbar-track { background: transparent; }
+    .doc-editor::-webkit-scrollbar-thumb {
+        background: var(--border-strong);
+        border-radius: 3px;
+    }
+
+    /* ============================================================
+       DIFF REPORT SECTION
+    ============================================================ */
+    .report-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--r-xl);
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+        transition: background var(--dur-slow) var(--ease-in-out),
+                    border-color var(--dur-slow) var(--ease-in-out);
+    }
+
+    .report-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 20px;
+        border-bottom: 1px solid var(--border);
+        background: var(--surface-2);
+        flex-wrap: wrap;
+    }
+
+    .report-heading {
+        font-size: 0.875rem;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        color: var(--text-1);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .report-heading svg {
+        width: 16px; height: 16px;
+        color: var(--accent);
+        flex-shrink: 0;
+    }
+
+    .report-spacer { flex: 1; }
+
+    .report-meta {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    /* Status chips */
+    .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        padding: 3px 8px;
+        border-radius: 100px;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        color: var(--text-3);
+        transition: all var(--dur-fast);
+        letter-spacing: 0.02em;
+    }
+
+    .chip.chip-on {
+        background: var(--accent-subtle);
+        border-color: rgba(37,99,235,.2);
+        color: var(--accent);
+    }
+
+    /* Legend */
+    .diff-legend {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 12px 20px;
+        border-bottom: 1px solid var(--border);
+        background: var(--surface);
+        flex-wrap: wrap;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.75rem;
+        color: var(--text-2);
+        font-weight: 500;
+    }
+
+    .legend-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 3px;
+    }
+
+    .legend-dot.add { background: var(--add-bg); border: 1px solid var(--add-line); }
+    .legend-dot.del { background: var(--del-bg); border: 1px solid var(--del-line); }
+    .legend-dot.mod { background: var(--mod-bg); border: 1px solid var(--mod-line); }
+
+    .legend-info {
+        margin-left: auto;
+        font-size: 0.7rem;
+        color: var(--text-3);
+        font-style: italic;
+    }
+
+    /* Diff output */
+    .diff-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0;
+    }
+
+    .diff-col {
+        padding: 16px 20px;
+        border-right: 1px solid var(--border);
+    }
+
+    .diff-col:last-child { border-right: none; }
+
+    .diff-col-label {
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        color: var(--text-3);
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .diff-col-label::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: var(--border);
+    }
+
+    .diff-view {
+        font-family: var(--font-ui);
+        font-size: 0.9rem;
+        line-height: 1.7;
+        white-space: pre-wrap;
+        min-height: 140px;
+        max-height: 480px;
+        overflow-y: auto;
+        padding: 14px 16px;
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: var(--r-lg);
+        scrollbar-width: thin;
+        scrollbar-color: var(--border-strong) transparent;
+    }
+
+    .diff-view::-webkit-scrollbar { width: 5px; }
+    .diff-view::-webkit-scrollbar-thumb {
+        background: var(--border-strong);
+        border-radius: 3px;
+    }
+
+    /* ============================================================
+       DIFF HIGHLIGHTS
+    ============================================================ */
+    .diff-added {
+        background: var(--add-bg);
+        color: var(--add-text);
+        border-bottom: 1.5px solid var(--add-line);
+        border-radius: 3px;
+        padding: 1px 3px;
+        font-weight: 500;
+        transition: background var(--dur-fast);
+    }
+
+    .diff-removed {
+        background: var(--del-bg);
+        color: var(--del-text);
+        border-bottom: 1.5px solid var(--del-line);
+        border-radius: 3px;
+        padding: 1px 3px;
+        text-decoration: line-through;
+        text-decoration-color: var(--del-text);
+        text-decoration-thickness: 1.5px;
+    }
+
+    .diff-modified {
+        background: var(--mod-bg);
+        color: var(--mod-text);
+        border-bottom: 2px dashed var(--mod-line);
+        border-radius: 3px;
+        padding: 1px 3px;
+        font-weight: 500;
+    }
+
+    /* ============================================================
+       EMPTY STATE
+    ============================================================ */
+    .empty-diff {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 40px 24px;
+        color: var(--text-3);
+        text-align: center;
+    }
+
+    .empty-diff svg {
+        width: 32px;
+        height: 32px;
+        opacity: .4;
+    }
+
+    .empty-diff p {
+        font-size: 0.8125rem;
+    }
+
+    /* ============================================================
+       SCROLLBARS (global)
+    ============================================================ */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb {
+        background: var(--border-strong);
+        border-radius: 3px;
+    }
+
+    /* ============================================================
+       THEME TOGGLE BUTTON
+    ============================================================ */
+    .theme-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--r-md);
+        border: 1px solid var(--border);
+        background: var(--surface);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background var(--dur-fast), border-color var(--dur-fast);
+        color: var(--text-2);
+    }
+
+    .theme-btn:hover {
+        background: var(--surface-2);
+        border-color: var(--border-strong);
+        color: var(--text-1);
+    }
+
+    .icon-sun, .icon-moon { transition: opacity var(--dur-fast), transform var(--dur-base); }
+    [data-theme="dark"] .icon-sun { opacity: 0; transform: scale(0); position: absolute; }
+    [data-theme="dark"] .icon-moon { opacity: 1; transform: scale(1); }
+    .icon-moon { opacity: 0; transform: scale(0); position: absolute; }
+    [data-theme]:not([data-theme="dark"]) .icon-sun { opacity: 1; transform: scale(1); }
+
+    /* ============================================================
+       RESPONSIVE
+    ============================================================ */
+    @media (max-width: 900px) {
+        .workspace-row { grid-template-columns: 1fr; }
+        .diff-grid { grid-template-columns: 1fr; }
+        .diff-col { border-right: none; border-bottom: 1px solid var(--border); }
+        .diff-col:last-child { border-bottom: none; }
+        .toolbar-strip { gap: 6px; }
+        .toolbar-sep { display: none; }
+        .legend-info { display: none; }
+    }
+
+    @media (max-width: 600px) {
+        .main-content { padding: 12px; gap: 12px; }
+        .topbar { padding: 0 12px; }
+        .brand-sub { display: none; }
+        .brand-divider { display: none; }
+    }
+
+    /* ============================================================
+       LOADING / PULSE ANIMATION
+    ============================================================ */
+    @keyframes pulse-glow {
+        0%, 100% { opacity: 1; }
+        50% { opacity: .5; }
+    }
+
+    .is-comparing .report-card {
+        animation: pulse-glow 0.8s var(--ease-in-out) 1;
+    }
+
+    /* ============================================================
+       FOCUS RING RESET
+    ============================================================ */
+    :focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+    }
+
+    button:focus:not(:focus-visible),
+    input:focus:not(:focus-visible) { outline: none; }
+
+    /* ============================================================
+       UTILITY
+    ============================================================ */
+    .sr-only {
+        position: absolute;
+        width: 1px; height: 1px;
+        padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0,0,0,0);
+        white-space: nowrap; border: 0;
+    }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <!-- Corporate Identity Application Header -->
-    <header>
-        <div class="brand-container">
-            <div class="logo-frame">
-                <img id="companyLogoElement" class="app-logo" src="upcodes.png">
+<div class="app-shell">
+
+    <!-- ─── TOPBAR ────────────────────────────────────────────── -->
+    <header class="topbar">
+        <div class="topbar-brand">
+            <div class="brand-logo-wrap">
+                <img id="companyLogoElement" src="upcodes.png" alt="UpCodes logo">
             </div>
-            <div class="brand-separator"></div>
-            <div class="brand-text-block">
-                <span id="companyNameElement" class="company-name-text">Company Name</span>
-                <span class="app-title-text">Text Diff Tool</span>
+            <div class="brand-divider"></div>
+            <div class="brand-label">
+                <span id="companyNameElement" class="brand-name">UpCodes</span>
+                <span class="brand-sub">Text Diff</span>
             </div>
         </div>
-        <button class="btn" id="themeToggle" onclick="toggleTheme()" aria-label="Toggle interface color mode">🌓 Theme</button>
+
+        <div class="topbar-spacer"></div>
+
+        <div class="topbar-actions">
+            <button class="btn btn-primary" onclick="compareDocs()">
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="3"/><line x1="16" y1="16" x2="13.4" y2="13.4"/><line x1="4" y1="8" x2="8" y2="8"/><line x1="4" y1="11" x2="7" y2="11"/><line x1="4" y1="5" x2="9" y2="5"/></svg>
+                Compare
+            </button>
+            <button class="btn" onclick="swapDocs()" title="Swap documents">
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 8 5 4 5 12"/><polyline points="15 8 11 4 11 12"/></svg>
+                Swap
+            </button>
+            <button class="btn" onclick="clearDocs()" title="Clear both editors">
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 13 6"/><path d="M14 6l-1 9H3L2 6"/><path d="M10 6V4a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1v2"/></svg>
+                Clear
+            </button>
+            <button class="btn" onclick="exportHTML()">
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 10v3H3v-3"/><polyline points="8 2 8 10"/><polyline points="5 7 8 10 11 7"/></svg>
+                Export
+            </button>
+            <button class="theme-btn" onclick="toggleTheme()" aria-label="Toggle theme">
+                <!-- Sun -->
+                <svg class="icon-sun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                    <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                </svg>
+                <!-- Moon -->
+                <svg class="icon-moon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                </svg>
+            </button>
+        </div>
     </header>
 
-    <!-- Master Glassmorphic Settings Controls Toolbar -->
-    <div class="controls-row">
-        <div class="controls-left">
-            <div class="btn-group">
-                <button class="btn btn-primary" onclick="compareDocs()">🔍 Compare</button>
-                <button class="btn" onclick="swapDocs()">🔄 Swap</button>
-                <button class="btn" onclick="clearDocs()">🧹 Clear</button>
-            </div>
+    <!-- ─── SETTINGS TOOLBAR ────────────────────────────────────── -->
+    <div class="toolbar-strip">
+        <span class="toolbar-label">Options</span>
 
-            <div class="settings-group">
-                <label class="toggle-container">
-                    <input type="checkbox" id="replaceBreaksToggle" onchange="onSettingChange()">
-                    Replace line breaks
-                </label>
-                <label class="toggle-container">
-                    <input type="checkbox" id="trimWhitespaceToggle" onchange="onSettingChange()">
-                    Trim Whitespace
-                </label>
-            </div>
-        </div>
+        <label class="toggle-row">
+            <input type="checkbox" class="toggle-switch" id="replaceBreaksToggle" onchange="onSettingChange()">
+            <span>Normalize line breaks</span>
+        </label>
 
-        <div class="controls-right">
-            <div class="toggle-container">
-                <input type="checkbox" id="realtimeToggle" onchange="toggleRealtime(this)">
-                <label for="realtimeToggle">Real-time tracking</label>
-            </div>
-            <div class="toggle-container">
-                <input type="checkbox" id="syncScrollToggle" checked>
-                <label for="syncScrollToggle">Sync Scroll</label>
-            </div>
-        </div>
+        <label class="toggle-row">
+            <input type="checkbox" class="toggle-switch" id="trimWhitespaceToggle" onchange="onSettingChange()">
+            <span>Trim whitespace</span>
+        </label>
+
+        <div class="toolbar-sep"></div>
+        <span class="toolbar-label">View</span>
+
+        <label class="toggle-row">
+            <input type="checkbox" class="toggle-switch" id="realtimeToggle" onchange="toggleRealtime(this)">
+            <span>Live compare</span>
+        </label>
+
+        <label class="toggle-row">
+            <input type="checkbox" class="toggle-switch" id="syncScrollToggle" checked>
+            <span>Sync scroll</span>
+        </label>
     </div>
 
-    <!-- Document Editors Split Workspace -->
-    <div class="workspace">
-        <!-- Document A Panel (Original Canvas) -->
-        <div class="panel">
-            <div class="panel-header">
-                <span>DOCUMENT A &bull; ORIGINAL ARCHIVE</span>
-                <input type="file" id="fileA" accept=".txt,.html" style="display:none" onchange="handleFileUpload(this, 'editorA')">
-                <button class="btn" style="padding:5px 10px; font-size:0.75rem; border-radius: var(--radius-sm);" onclick="document.getElementById('fileA').click()">📁 Upload Asset</button>
-            </div>
-            
-            <div class="rt-toolbar">
-                <button class="rt-btn" onclick="format('bold')" title="Bold">B</button>
-                <button class="rt-btn" onclick="format('italic')" style="font-style: italic;" title="Italic">I</button>
-                <button class="rt-btn" onclick="format('underline')" style="text-decoration: underline;" title="Underline">U</button>
-                <select class="rt-select" onchange="format('fontSize', this.value)">
-                    <option value="3">Size Regular</option>
-                    <option value="2">Small</option>
-                    <option value="5">Large</option>
-                    <option value="7">Huge</option>
-                </select>
-                <select class="rt-select" onchange="format('fontName', this.value)">
-                    <option value="Arial">Arial</option>
-                    <option value="Courier New">Courier</option>
-                    <option value="Georgia">Georgia</option>
-                </select>
-                <select class="rt-select" onchange="format('foreColor', this.value)">
-                    <option value="#0f172a">Default Hue</option>
-                    <option value="#ef4444">Red Accent</option>
-                    <option value="#10b981">Green Accent</option>
-                    <option value="#3b82f6">Blue Accent</option>
-                </select>
+    <!-- ─── MAIN ─────────────────────────────────────────────────── -->
+    <main class="main-content">
+
+        <!-- ── EDITOR WORKSPACE ── -->
+        <div class="workspace-row">
+
+            <!-- DOC A -->
+            <div class="doc-card">
+                <div class="card-header">
+                    <span class="card-badge badge-a">A · Original</span>
+                    <span class="card-title">Source document</span>
+                    <input type="file" id="fileA" accept=".txt,.html" style="display:none" onchange="handleFileUpload(this,'editorA')">
+                    <button class="btn btn-sm btn-ghost" onclick="document.getElementById('fileA').click()">
+                        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 10v3H2v-3"/><polyline points="8 2 8 9"/><polyline points="5 6 8 9 11 6"/></svg>
+                        Upload
+                    </button>
+                </div>
+
+                <div class="rt-bar">
+                    <button class="fmt-btn" onclick="focusEditor('editorA'); format('bold')" title="Bold" style="font-weight:700;">B</button>
+                    <button class="fmt-btn" onclick="focusEditor('editorA'); format('italic')" title="Italic" style="font-style:italic;">I</button>
+                    <button class="fmt-btn" onclick="focusEditor('editorA'); format('underline')" title="Underline" style="text-decoration:underline;">U</button>
+                    <div class="rt-bar-sep"></div>
+                    <select class="fmt-select" onchange="focusEditor('editorA'); format('fontSize', this.value)">
+                        <option value="3">Regular</option>
+                        <option value="2">Small</option>
+                        <option value="5">Large</option>
+                        <option value="7">Huge</option>
+                    </select>
+                    <select class="fmt-select" onchange="focusEditor('editorA'); format('fontName', this.value)">
+                        <option value="inherit">Font</option>
+                        <option value="Arial">Arial</option>
+                        <option value="Courier New">Courier</option>
+                        <option value="Georgia">Georgia</option>
+                    </select>
+                    <select class="fmt-select" onchange="focusEditor('editorA'); format('foreColor', this.value)">
+                        <option value="#111827">Default</option>
+                        <option value="#ef4444">Red</option>
+                        <option value="#10b981">Green</option>
+                        <option value="#3b82f6">Blue</option>
+                    </select>
+                </div>
+
+                <div class="editor-wrap">
+                    <div class="line-gutter" id="linesA">1</div>
+                    <div class="doc-editor" id="editorA" contenteditable="true" oninput="onEditorInput()" spellcheck="false" tabindex="0"></div>
+                </div>
             </div>
 
-            <div class="editor-container">
-                <div class="line-numbers" id="linesA">1<br>2<br>3</div>
-                <div class="editor" id="editorA" contenteditable="true" oninput="onEditorInput()" tabindex="0"></div>
-            </div>
-        </div>
+            <!-- DOC B -->
+            <div class="doc-card">
+                <div class="card-header">
+                    <span class="card-badge badge-b">B · Modified</span>
+                    <span class="card-title">Revised document</span>
+                    <input type="file" id="fileB" accept=".txt,.html" style="display:none" onchange="handleFileUpload(this,'editorB')">
+                    <button class="btn btn-sm btn-ghost" onclick="document.getElementById('fileB').click()">
+                        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 10v3H2v-3"/><polyline points="8 2 8 9"/><polyline points="5 6 8 9 11 6"/></svg>
+                        Upload
+                    </button>
+                </div>
 
-        <!-- Document B Panel (Modified Canvas) -->
-        <div class="panel">
-            <div class="panel-header">
-                <span>DOCUMENT B &bull; MODIFIED VARIATION</span>
-                <input type="file" id="fileB" accept=".txt,.html" style="display:none" onchange="handleFileUpload(this, 'editorB')">
-                <button class="btn" style="padding:5px 10px; font-size:0.75rem; border-radius: var(--radius-sm);" onclick="document.getElementById('fileB').click()">📁 Upload Asset</button>
-            </div>
-            
-            <div class="rt-toolbar">
-                <button class="rt-btn" onclick="format('bold')" title="Bold">B</button>
-                <button class="rt-btn" onclick="format('italic')" style="font-style: italic;" title="Italic">I</button>
-                <button class="rt-btn" onclick="format('underline')" style="text-decoration: underline;" title="Underline">U</button>
-                <select class="rt-select" onchange="format('fontSize', this.value)">
-                    <option value="3">Size Regular</option>
-                    <option value="2">Small</option>
-                    <option value="5">Large</option>
-                    <option value="7">Huge</option>
-                </select>
-                <select class="rt-select" onchange="format('fontName', this.value)">
-                    <option value="Arial">Arial</option>
-                    <option value="Courier New">Courier</option>
-                    <option value="Georgia">Georgia</option>
-                </select>
-                <select class="rt-select" onchange="format('foreColor', this.value)">
-                    <option value="#0f172a">Default Hue</option>
-                    <option value="#ef4444">Red Accent</option>
-                    <option value="#10b981">Green Accent</option>
-                    <option value="#3b82f6">Blue Accent</option>
-                </select>
+                <div class="rt-bar">
+                    <button class="fmt-btn" onclick="focusEditor('editorB'); format('bold')" title="Bold" style="font-weight:700;">B</button>
+                    <button class="fmt-btn" onclick="focusEditor('editorB'); format('italic')" title="Italic" style="font-style:italic;">I</button>
+                    <button class="fmt-btn" onclick="focusEditor('editorB'); format('underline')" title="Underline" style="text-decoration:underline;">U</button>
+                    <div class="rt-bar-sep"></div>
+                    <select class="fmt-select" onchange="focusEditor('editorB'); format('fontSize', this.value)">
+                        <option value="3">Regular</option>
+                        <option value="2">Small</option>
+                        <option value="5">Large</option>
+                        <option value="7">Huge</option>
+                    </select>
+                    <select class="fmt-select" onchange="focusEditor('editorB'); format('fontName', this.value)">
+                        <option value="inherit">Font</option>
+                        <option value="Arial">Arial</option>
+                        <option value="Courier New">Courier</option>
+                        <option value="Georgia">Georgia</option>
+                    </select>
+                    <select class="fmt-select" onchange="focusEditor('editorB'); format('foreColor', this.value)">
+                        <option value="#111827">Default</option>
+                        <option value="#ef4444">Red</option>
+                        <option value="#10b981">Green</option>
+                        <option value="#3b82f6">Blue</option>
+                    </select>
+                </div>
+
+                <div class="editor-wrap">
+                    <div class="line-gutter" id="linesB">1</div>
+                    <div class="doc-editor" id="editorB" contenteditable="true" oninput="onEditorInput()" spellcheck="false" tabindex="0"></div>
+                </div>
             </div>
 
-            <div class="editor-container">
-                <div class="line-numbers" id="linesB">1<br>2<br>3</div>
-                <div class="editor" id="editorB" contenteditable="true" oninput="onEditorInput()" tabindex="0"></div>
+        </div><!-- /workspace-row -->
+
+        <!-- ── DIFF REPORT ── -->
+        <div class="report-card" id="reportCard">
+
+            <div class="report-header">
+                <span class="report-heading">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="9" y1="13" x2="15" y2="13"/>
+                        <line x1="9" y1="17" x2="11" y2="17"/>
+                    </svg>
+                    Diff Analysis
+                </span>
+
+                <div class="report-meta" id="activeBadgesContainer">
+                    <span class="chip" id="badgeBreaks">Breaks: off</span>
+                    <span class="chip" id="badgeWhitespace">Whitespace: off</span>
+                </div>
+
+                <div class="report-spacer"></div>
+
+                <button class="btn btn-sm" onclick="exportHTML()">
+                    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 10v3H3v-3"/><polyline points="8 2 8 10"/><polyline points="5 7 8 10 11 7"/></svg>
+                    Export HTML
+                </button>
             </div>
-        </div>
-    </div>
 
-    <!-- Visual Differential Report Output Presentation Card -->
-    <div class="report-section">
-        <div class="report-title">
-            <span>Visual Delta Analysis</span>
-            <button class="btn btn-primary" style="padding: 8px 16px; font-size:0.8rem;" onclick="exportHTML()">📥 Export Distribution Build</button>
-        </div>
-
-        <div class="active-badges" id="activeBadgesContainer">
-            <span class="badge" id="badgeBreaks">Replace Line Breaks: Off</span>
-            <span class="badge" id="badgeWhitespace">Trim Whitespace: Off</span>
-        </div>
-
-        <div class="legend">
-            <div class="legend-item"><div class="legend-color" style="background: var(--diff-add-bg); border-color: var(--diff-add-border)"></div> Content Additions</div>
-            <div class="legend-item"><div class="legend-color" style="background: var(--diff-remove-bg); border-color: var(--diff-remove-border)"></div> Content Deletions</div>
-            <div class="legend-item"><div class="legend-color" style="background: var(--diff-mod-bg); border-color: var(--diff-mod-border)"></div> Formatting Shifts</div>
-        </div>
-
-        <div class="diff-output-grid">
-            <div>
-                <h4 style="font-size:0.75rem; color: var(--text-muted); letter-spacing:0.05em; margin-bottom: 8px; text-transform: uppercase;">A Delta Map &bull; Removals</h4>
-                <div class="diff-view" id="diffOutputA"></div>
+            <div class="diff-legend">
+                <div class="legend-item">
+                    <div class="legend-dot add"></div>
+                    Additions
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot del"></div>
+                    Deletions
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot mod"></div>
+                    Formatting changes
+                </div>
+                <span class="legend-info">Font family, size &amp; color are excluded from comparison</span>
             </div>
-            <div>
-                <h4 style="font-size:0.75rem; color: var(--text-muted); letter-spacing:0.05em; margin-bottom: 8px; text-transform: uppercase;">B Delta Map &bull; Additions</h4>
-                <div class="diff-view" id="diffOutputB"></div>
+
+            <div class="diff-grid">
+                <div class="diff-col">
+                    <div class="diff-col-label">A · Removals</div>
+                    <div class="diff-view" id="diffOutputA">
+                        <div class="empty-diff">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                            </svg>
+                            <p>Click <strong>Compare</strong> to see results</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="diff-col">
+                    <div class="diff-col-label">B · Additions</div>
+                    <div class="diff-view" id="diffOutputB">
+                        <div class="empty-diff">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                            </svg>
+                            <p>Click <strong>Compare</strong> to see results</p>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
+
+        </div><!-- /report-card -->
+
+    </main>
 </div>
 
 <script>
-    // =========================================================================
-    // 🏢 CENTRAL BRANDING CONFIGURATION OBJECT
-    // =========================================================================
-    const BRAND_CONFIG = {
-        companyName: "UpCodes",
-        
-        // High-contrast clean vector placeholder logos
-        logoUrlLight: "upcodes.png", 
-        logoUrlDark: "upcodes.png",
-        
-        svgFallback: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232563eb'><path d='M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z'/></svg>"
-    };
-    // =========================================================================
+// =========================================================================
+// BRANDING CONFIG
+// =========================================================================
+const BRAND_CONFIG = {
+    companyName: "UpCodes",
+    logoUrlLight: "upcodes.png",
+    logoUrlDark:  "upcodes2.png",
+    svgFallback: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232563eb'><path d='M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z'/></svg>"
+};
 
-    let isRealtime = false;
+let isRealtime = false;
+let lastFocusedEditor = 'editorA';
 
-    window.addEventListener('DOMContentLoaded', () => {
-        initBranding();
-        document.getElementById('editorA').innerHTML = `<div>Welcome to the <b>Rich Text</b> comparison tool.</div>\n<div>This has\nline breaks and   multiple   spaces.</div>`;
-        document.getElementById('editorB').innerHTML = `<div>Welcome to the <i>Rich Text</i> comparison tool.</div><div>This has line breaks and multiple spaces.</div>`;
-        updateLineNumbers('editorA', 'linesA');
-        updateLineNumbers('editorB', 'linesB');
-        compareDocs();
+// =========================================================================
+// INIT
+// =========================================================================
+window.addEventListener('DOMContentLoaded', () => {
+    initBranding();
+
+    document.getElementById('editorA').innerHTML =
+        `<div>Welcome to the <b>Rich Text</b> comparison tool.</div>` +
+        `<div>This has\nline breaks and   multiple   spaces.</div>`;
+
+    document.getElementById('editorB').innerHTML =
+        `<div>Welcome to the <i>Rich Text</i> comparison tool.</div>` +
+        `<div>This has line breaks and multiple spaces.</div>`;
+
+    updateLineNumbers('editorA', 'linesA');
+    updateLineNumbers('editorB', 'linesB');
+    compareDocs();
+
+    setupSyncScroll();
+});
+
+function initBranding() {
+    const logoImg  = document.getElementById('companyLogoElement');
+    const nameSpan = document.getElementById('companyNameElement');
+    nameSpan.textContent = BRAND_CONFIG.companyName;
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    logoImg.src = (isDark ? BRAND_CONFIG.logoUrlDark : BRAND_CONFIG.logoUrlLight) || BRAND_CONFIG.svgFallback;
+    logoImg.onerror = () => { logoImg.src = BRAND_CONFIG.svgFallback; };
+}
+
+// =========================================================================
+// THEME
+// =========================================================================
+function toggleTheme() {
+    const root = document.documentElement;
+    const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+
+    const logoImg = document.getElementById('companyLogoElement');
+    logoImg.src = (next === 'dark' ? BRAND_CONFIG.logoUrlDark : BRAND_CONFIG.logoUrlLight) || BRAND_CONFIG.svgFallback;
+}
+
+// =========================================================================
+// EDITOR HELPERS
+// =========================================================================
+function focusEditor(id) { lastFocusedEditor = id; }
+
+function format(command, value = null) {
+    document.getElementById(lastFocusedEditor).focus();
+    document.execCommand(command, false, value);
+    onEditorInput();
+}
+
+function onEditorInput() {
+    updateLineNumbers('editorA', 'linesA');
+    updateLineNumbers('editorB', 'linesB');
+    if (isRealtime) compareDocs();
+}
+
+function updateLineNumbers(editorId, lineNumId) {
+    const editor = document.getElementById(editorId);
+    const lines   = document.getElementById(lineNumId);
+    const count   = Math.max(1, editor.innerText.split('\n').length);
+    lines.innerHTML = Array.from({length: count}, (_, i) => i + 1).join('<br>');
+}
+
+function toggleRealtime(cb) {
+    isRealtime = cb.checked;
+    if (isRealtime) compareDocs();
+}
+
+function onSettingChange() {
+    updateChips();
+    compareDocs();
+}
+
+function updateChips() {
+    const rb = document.getElementById('replaceBreaksToggle').checked;
+    const tw = document.getElementById('trimWhitespaceToggle').checked;
+
+    const bBreaks = document.getElementById('badgeBreaks');
+    bBreaks.textContent = rb ? "Breaks: on" : "Breaks: off";
+    bBreaks.classList.toggle('chip-on', rb);
+
+    const bWS = document.getElementById('badgeWhitespace');
+    bWS.textContent = tw ? "Whitespace: on" : "Whitespace: off";
+    bWS.classList.toggle('chip-on', tw);
+}
+
+function clearDocs() {
+    ['editorA','editorB','diffOutputA','diffOutputB'].forEach(id => {
+        document.getElementById(id).innerHTML = '';
     });
+    showEmptyState();
+    updateLineNumbers('editorA', 'linesA');
+    updateLineNumbers('editorB', 'linesB');
+}
 
-    function initBranding() {
-        const logoImg = document.getElementById('companyLogoElement');
-        const nameSpan = document.getElementById('companyNameElement');
-        
-        nameSpan.textContent = BRAND_CONFIG.companyName;
-        
-        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-        const targetedSource = isDark ? (BRAND_CONFIG.logoUrlDark || BRAND_CONFIG.logoUrlLight) : BRAND_CONFIG.logoUrlLight;
+function showEmptyState() {
+    const emptyHTML = `<div class="empty-diff">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <p>Click <strong>Compare</strong> to see results</p>
+    </div>`;
+    document.getElementById('diffOutputA').innerHTML = emptyHTML;
+    document.getElementById('diffOutputB').innerHTML = emptyHTML;
+}
 
-        logoImg.src = targetedSource || BRAND_CONFIG.svgFallback;
-        logoImg.onerror = function() { this.src = BRAND_CONFIG.svgFallback; };
-    }
+function swapDocs() {
+    const a = document.getElementById('editorA').innerHTML;
+    document.getElementById('editorA').innerHTML = document.getElementById('editorB').innerHTML;
+    document.getElementById('editorB').innerHTML = a;
+    onEditorInput();
+}
 
-    function format(command, value = null) {
-        document.execCommand(command, false, value);
+function handleFileUpload(input, targetEditorId) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+        document.getElementById(targetEditorId).innerHTML = e.target.result;
         onEditorInput();
-    }
+    };
+    reader.readAsText(file);
+}
 
-    function toggleTheme() {
-        const root = document.documentElement;
-        const currentTheme = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-        root.setAttribute('data-theme', currentTheme);
-        
-        const logoImg = document.getElementById('companyLogoElement');
-        const targetedSource = (currentTheme === 'dark') ? (BRAND_CONFIG.logoUrlDark || BRAND_CONFIG.logoUrlLight) : BRAND_CONFIG.logoUrlLight;
-        logoImg.src = targetedSource || BRAND_CONFIG.svgFallback;
-    }
-
-    function toggleRealtime(checkbox) {
-        isRealtime = checkbox.checked;
-        if (isRealtime) compareDocs();
-    }
-
-    function onEditorInput() {
-        updateLineNumbers('editorA', 'linesA');
-        updateLineNumbers('editorB', 'linesB');
-        if (isRealtime) compareDocs();
-    }
-
-    function onSettingChange() {
-        updateReportBadges();
-        compareDocs();
-    }
-
-    function updateReportBadges() {
-        const replaceBreaks = document.getElementById('replaceBreaksToggle').checked;
-        const trimWhitespace = document.getElementById('trimWhitespaceToggle').checked;
-
-        const bBreaks = document.getElementById('badgeBreaks');
-        bBreaks.textContent = replaceBreaks ? "Replace Line Breaks: Active" : "Replace Line Breaks: Off";
-        replaceBreaks ? bBreaks.classList.add('active') : bBreaks.classList.remove('active');
-
-        const bWhitespace = document.getElementById('badgeWhitespace');
-        bWhitespace.textContent = trimWhitespace ? "Trim Whitespace: Active" : "Trim Whitespace: Off";
-        trimWhitespace ? bWhitespace.classList.add('active') : bWhitespace.classList.remove('active');
-    }
-
-    function clearDocs() {
-        document.getElementById('editorA').innerHTML = '';
-        document.getElementById('editorB').innerHTML = '';
-        document.getElementById('diffOutputA').innerHTML = '';
-        document.getElementById('diffOutputB').innerHTML = '';
-        updateLineNumbers('editorA', 'linesA');
-        updateLineNumbers('editorB', 'linesB');
-    }
-
-    function swapDocs() {
-        const a = document.getElementById('editorA').innerHTML;
-        document.getElementById('editorA').innerHTML = document.getElementById('editorB').innerHTML;
-        document.getElementById('editorB').innerHTML = a;
-        onEditorInput();
-    }
-
-    function handleFileUpload(input, targetEditorId) {
-        const file = input.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            document.getElementById(targetEditorId).innerHTML = e.target.result;
-            onEditorInput();
-        };
-        reader.readAsText(file);
-    }
-
-    function updateLineNumbers(editorId, lineNumId) {
-        const editor = document.getElementById(editorId);
-        const linesDiv = document.getElementById(lineNumId);
-        const linesCount = Math.max(1, editor.innerText.split('\n').length);
-        linesDiv.innerHTML = Array.from({length: linesCount}, (_, i) => i + 1).join('<br>');
-    }
-
-    // --- Synchronized Scrolling Mechanism ---
+// =========================================================================
+// SYNCHRONIZED SCROLLING
+// =========================================================================
+function setupSyncScroll() {
     const edA = document.getElementById('editorA');
     const edB = document.getElementById('editorB');
-    function syncScroll(source, target) {
-        if (!document.getElementById('syncScrollToggle').checked) return;
-        const percentage = source.scrollTop / (source.scrollHeight - source.clientHeight);
-        target.scrollTop = percentage * (target.scrollHeight - target.clientHeight);
-    }
-    edA.addEventListener('scroll', () => syncScroll(edA, edB));
-    edB.addEventListener('scroll', () => syncScroll(edB, edA));
 
+    let lockA = false, lockB = false;
 
-    // --- Core Parser / Diff Engine Logic ---
-    function compareDocs() {
-        const rootA = document.getElementById('editorA');
-        const rootB = document.getElementById('editorB');
+    edA.addEventListener('scroll', () => {
+        if (!document.getElementById('syncScrollToggle').checked || lockA) return;
+        lockB = true;
+        const pct = edA.scrollTop / (edA.scrollHeight - edA.clientHeight || 1);
+        edB.scrollTop = pct * (edB.scrollHeight - edB.clientHeight);
+        requestAnimationFrame(() => lockB = false);
+    });
 
-        const replaceBreaks = document.getElementById('replaceBreaksToggle').checked;
-        const trimWhitespace = document.getElementById('trimWhitespaceToggle').checked;
+    edB.addEventListener('scroll', () => {
+        if (!document.getElementById('syncScrollToggle').checked || lockB) return;
+        lockA = true;
+        const pct = edB.scrollTop / (edB.scrollHeight - edB.clientHeight || 1);
+        edA.scrollTop = pct * (edA.scrollHeight - edA.clientHeight);
+        requestAnimationFrame(() => lockA = false);
+    });
 
-        let tokensA = flattenNodes(rootA);
-        let tokensB = flattenNodes(rootB);
+    // sync diff views
+    const dA = document.getElementById('diffOutputA');
+    const dB = document.getElementById('diffOutputB');
+    let lockDA = false, lockDB = false;
 
-        tokensA = preprocessTokens(tokensA, replaceBreaks, trimWhitespace);
-        tokensB = preprocessTokens(tokensB, replaceBreaks, trimWhitespace);
+    dA.addEventListener('scroll', () => {
+        if (lockDA) return;
+        lockDB = true;
+        const pct = dA.scrollTop / (dA.scrollHeight - dA.clientHeight || 1);
+        dB.scrollTop = pct * (dB.scrollHeight - dB.clientHeight);
+        requestAnimationFrame(() => lockDB = false);
+    });
 
-        const diffReport = computeDiff(tokensA, tokensB);
+    dB.addEventListener('scroll', () => {
+        if (lockDB) return;
+        lockDA = true;
+        const pct = dB.scrollTop / (dB.scrollHeight - dB.clientHeight || 1);
+        dA.scrollTop = pct * (dA.scrollHeight - dA.clientHeight);
+        requestAnimationFrame(() => lockDA = false);
+    });
+}
 
-        updateReportBadges();
-        renderDiffViews(diffReport);
-    }
+// =========================================================================
+// DIFF ENGINE
+// =========================================================================
+function compareDocs() {
+    const replaceBreaks  = document.getElementById('replaceBreaksToggle').checked;
+    const trimWhitespace = document.getElementById('trimWhitespaceToggle').checked;
 
-    function flattenNodes(element) {
-        let result = [];
-        
-        function recurse(node, activeStyles) {
-            if (node.nodeType === Node.TEXT_NODE) {
-                const textVal = node.nodeValue;
-                if(textVal.length > 0) {
-                    result.push({
-                        text: textVal,
-                        styles: { ...activeStyles }
-                    });
-                }
-            } else if (node.nodeType === Node.ELEMENT_NODE) {
-                const currentStyles = { ...activeStyles };
-                const tagName = node.tagName.toLowerCase();
+    let tokensA = flattenNodes(document.getElementById('editorA'));
+    let tokensB = flattenNodes(document.getElementById('editorB'));
 
-                if (tagName === 'b' || tagName === 'strong') currentStyles.bold = true;
-                if (tagName === 'i' || tagName === 'em') currentStyles.italic = true;
-                if (tagName === 'u') currentStyles.underline = true;
-                
-                if (node.style.fontWeight === 'bold' || parseInt(node.style.fontWeight) >= 700) currentStyles.bold = true;
-                if (node.style.fontStyle === 'italic') currentStyles.italic = true;
-                if (node.style.textDecoration.includes('underline')) currentStyles.underline = true;
-                if (node.style.fontSize) currentStyles.fontSize = node.style.fontSize;
-                if (node.style.fontFamily) currentStyles.fontFamily = node.style.fontFamily.replace(/['"]/g, '');
-                if (node.style.color) currentStyles.color = node.style.color;
+    tokensA = preprocessTokens(tokensA, replaceBreaks, trimWhitespace);
+    tokensB = preprocessTokens(tokensB, replaceBreaks, trimWhitespace);
 
-                if (node.getAttribute('color')) currentStyles.color = node.getAttribute('color');
-                if (node.getAttribute('face')) currentStyles.fontFamily = node.getAttribute('face');
-                if (node.getAttribute('size')) currentStyles.fontSize = node.getAttribute('size');
+    const diffReport = computeDiff(tokensA, tokensB);
 
-                if ((tagName === 'div' || tagName === 'p' || tagName === 'br') && node !== element) {
-                    result.push({ text: '\n', styles: { ...currentStyles } });
-                }
+    updateChips();
+    renderDiffViews(diffReport);
+}
 
-                node.childNodes.forEach(child => {
-                    if (child.nodeName.toLowerCase() !== 'br') {
-                        recurse(child, currentStyles);
-                    } else if (child.nodeType === Node.ELEMENT_NODE && child.tagName.toLowerCase() === 'br') {
-                        result.push({ text: '\n', styles: { ...currentStyles } });
-                    }
-                });
+function flattenNodes(element) {
+    const result = [];
+
+    function recurse(node, activeStyles) {
+        if (node.nodeType === Node.TEXT_NODE) {
+            if (node.nodeValue.length > 0) {
+                result.push({ text: node.nodeValue, styles: { ...activeStyles } });
             }
-        }
-        
-        recurse(element, {
-            bold: false, italic: false, underline: false,
-            fontSize: '', fontFamily: '', color: ''
-        });
-        return result;
-    }
+        } else if (node.nodeType === Node.ELEMENT_NODE) {
+            const cur  = { ...activeStyles };
+            const tag  = node.tagName.toLowerCase();
 
-    function preprocessTokens(tokens, replaceBreaks, trimWhitespace) {
-        let processed = [];
+            if (tag === 'b' || tag === 'strong') cur.bold = true;
+            if (tag === 'i' || tag === 'em')     cur.italic = true;
+            if (tag === 'u')                      cur.underline = true;
 
-        tokens.forEach(tok => {
-            let workingText = tok.text;
-            if (replaceBreaks) workingText = workingText.replace(/[\r\n]+/g, ' ');
-            if (trimWhitespace) workingText = workingText.replace(/[ \t]+/g, ' ');
+            if (node.style.fontWeight === 'bold' || parseInt(node.style.fontWeight) >= 700) cur.bold = true;
+            if (node.style.fontStyle === 'italic')            cur.italic = true;
+            if (node.style.textDecoration.includes('underline')) cur.underline = true;
+            if (node.style.fontSize)   cur.fontSize   = node.style.fontSize;
+            if (node.style.fontFamily) cur.fontFamily = node.style.fontFamily.replace(/['"]/g,'');
+            if (node.style.color)      cur.color      = node.style.color;
+            if (node.getAttribute('color')) cur.color      = node.getAttribute('color');
+            if (node.getAttribute('face'))  cur.fontFamily = node.getAttribute('face');
+            if (node.getAttribute('size'))  cur.fontSize   = node.getAttribute('size');
 
-            processed.push({
-                text: workingText,
-                styles: { ...tok.styles }
-            });
-        });
+            if ((tag === 'div' || tag === 'p' || tag === 'br') && node !== element) {
+                result.push({ text: '\n', styles: { ...cur } });
+            }
 
-        let atomicTokens = [];
-        processed.forEach(tok => {
-            const pieces = tok.text.split(/([ \n])/g);
-            pieces.forEach(p => {
-                if (p !== '') {
-                    atomicTokens.push({
-                        text: p,
-                        styles: { ...tok.styles }
-                    });
+            node.childNodes.forEach(child => {
+                if (child.nodeName.toLowerCase() !== 'br') {
+                    recurse(child, cur);
+                } else if (child.nodeType === Node.ELEMENT_NODE) {
+                    result.push({ text: '\n', styles: { ...cur } });
                 }
             });
+        }
+    }
+
+    recurse(element, { bold: false, italic: false, underline: false, fontSize: '', fontFamily: '', color: '' });
+    return result;
+}
+
+function preprocessTokens(tokens, replaceBreaks, trimWhitespace) {
+    let processed = tokens.map(tok => ({
+        text: replaceBreaks
+            ? tok.text.replace(/[\r\n]+/g,' ')
+            : trimWhitespace ? tok.text.replace(/[ \t]+/g,' ') : tok.text,
+        styles: { ...tok.styles }
+    }));
+
+    let atomic = [];
+    processed.forEach(tok => {
+        tok.text.split(/([ \n])/g).forEach(p => {
+            if (p !== '') atomic.push({ text: p, styles: { ...tok.styles } });
         });
+    });
 
-        if (trimWhitespace) {
-            while (atomicTokens.length > 0 && atomicTokens[0].text === ' ') atomicTokens.shift();
-            while (atomicTokens.length > 0 && atomicTokens[atomicTokens.length - 1].text === ' ') atomicTokens.pop();
-            
-            let compressed = [];
-            for (let i = 0; i < atomicTokens.length; i++) {
-                if (atomicTokens[i].text === ' ' && compressed.length > 0 && compressed[compressed.length - 1].text === ' ') {
-                    continue;
-                }
-                compressed.push(atomicTokens[i]);
-            }
-            atomicTokens = compressed;
+    if (trimWhitespace) {
+        while (atomic.length && atomic[0].text === ' ')             atomic.shift();
+        while (atomic.length && atomic[atomic.length-1].text === ' ') atomic.pop();
+
+        let compressed = [];
+        for (const t of atomic) {
+            if (t.text === ' ' && compressed.length && compressed[compressed.length-1].text === ' ') continue;
+            compressed.push(t);
         }
-
-        return atomicTokens;
+        atomic = compressed;
     }
 
-    function stylesMatch(s1, s2) {
-        return s1.bold === s2.bold &&
-               s1.italic === s2.italic &&
-               s1.underline === s2.underline &&
-               s1.fontSize === s2.fontSize &&
-               s1.fontFamily === s2.fontFamily &&
-               s1.color === s2.color;
-    }
+    return atomic;
+}
 
-    function computeDiff(arrA, arrB) {
-        const N = arrA.length, M = arrB.length;
-        let dp = Array.from({ length: N + 1 }, () => Array(M + 1).fill(0));
-        
-        for (let i = 1; i <= N; i++) {
-            for (let j = 1; j <= M; j++) {
-                if (arrA[i - 1].text === arrB[j - 1].text && stylesMatch(arrA[i - 1].styles, arrB[j - 1].styles)) {
-                    dp[i][j] = dp[i - 1][j - 1] + 1;
-                } else {
-                    dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
-                }
-            }
-        }
+function stylesMatch(s1, s2) {
+    return s1.bold === s2.bold && s1.italic === s2.italic && s1.underline === s2.underline;
+}
 
-        let i = N, j = M;
-        let outA = []; let outB = [];
+function computeDiff(arrA, arrB) {
+    const N = arrA.length, M = arrB.length;
+    const dp = Array.from({length: N+1}, () => new Int32Array(M+1));
 
-        while (i > 0 || j > 0) {
-            if (i > 0 && j > 0 && arrA[i - 1].text === arrB[j - 1].text && stylesMatch(arrA[i - 1].styles, arrB[j - 1].styles)) {
-                outA.unshift({ type: 'equal', item: arrA[i - 1] });
-                outB.unshift({ type: 'equal', item: arrB[j - 1] });
-                i--; j--;
-            } else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) {
-                if (i > 0 && arrA[i - 1].text === arrB[j - 1].text) {
-                    outA.unshift({ type: 'modified', item: arrA[i - 1] });
-                    outB.unshift({ type: 'modified', item: arrB[j - 1] });
-                    i--;
-                } else {
-                    outB.unshift({ type: 'added', item: arrB[j - 1] });
-                }
-                j--;
+    for (let i = 1; i <= N; i++) {
+        for (let j = 1; j <= M; j++) {
+            if (arrA[i-1].text === arrB[j-1].text && stylesMatch(arrA[i-1].styles, arrB[j-1].styles)) {
+                dp[i][j] = dp[i-1][j-1] + 1;
             } else {
-                outA.unshift({ type: 'removed', item: arrA[i - 1] });
-                i--;
+                dp[i][j] = Math.max(dp[i-1][j], dp[i][j-1]);
             }
         }
-        return { viewA: outA, viewB: outB };
     }
 
-    function buildFormattedSpan(diffObj) {
-        const { type, item } = diffObj;
-        const span = document.createElement('span');
-        span.textContent = item.text;
-        
-        if (item.styles.bold) span.style.fontWeight = 'bold';
-        if (item.styles.italic) span.style.fontStyle = 'italic';
-        if (item.styles.underline) span.style.textDecoration = 'underline';
-        if (item.styles.fontSize) span.style.fontSize = item.styles.fontSize;
-        if (item.styles.fontFamily) span.style.fontFamily = item.styles.fontFamily;
-        if (item.styles.color) span.style.color = item.styles.color;
+    let i = N, j = M;
+    const outA = [], outB = [];
 
-        if (type === 'added') span.className = 'diff-added';
-        if (type === 'removed') span.className = 'diff-removed';
-        if (type === 'modified') span.className = 'diff-modified';
-
-        return span;
+    while (i > 0 || j > 0) {
+        if (i > 0 && j > 0 && arrA[i-1].text === arrB[j-1].text && stylesMatch(arrA[i-1].styles, arrB[j-1].styles)) {
+            outA.unshift({ type: 'equal',   item: arrA[i-1] });
+            outB.unshift({ type: 'equal',   item: arrB[j-1] });
+            i--; j--;
+        } else if (j > 0 && (i === 0 || dp[i][j-1] >= dp[i-1][j])) {
+            if (i > 0 && arrA[i-1].text === arrB[j-1].text) {
+                outA.unshift({ type: 'modified', item: arrA[i-1] });
+                outB.unshift({ type: 'modified', item: arrB[j-1] });
+                i--;
+            } else {
+                outB.unshift({ type: 'added', item: arrB[j-1] });
+            }
+            j--;
+        } else {
+            outA.unshift({ type: 'removed', item: arrA[i-1] });
+            i--;
+        }
     }
 
-    function renderDiffViews(diffReport) {
-        const outA = document.getElementById('diffOutputA');
-        const outB = document.getElementById('diffOutputB');
-        outA.innerHTML = ''; outB.innerHTML = '';
-        diffReport.viewA.forEach(obj => outA.appendChild(buildFormattedSpan(obj)));
-        diffReport.viewB.forEach(obj => outB.appendChild(buildFormattedSpan(obj)));
-    }
+    return { viewA: outA, viewB: outB };
+}
 
-    function exportHTML() {
-        const currentLogoPath = document.getElementById('companyLogoElement').src;
-        const currentCompanyName = document.getElementById('companyNameElement').textContent;
+function buildSpan(diffObj) {
+    const { type, item } = diffObj;
+    const span = document.createElement('span');
+    span.textContent = item.text;
 
-        const reportData = `
-        <html>
-        <head>
-            <title>Branded Comparison Audit Report</title>
-            <style>
-                body { font-family: -apple-system, sans-serif; padding: 40px; background:#f9fafb; color:#0f172a;}
-                .brand-header { display: flex; align-items: center; gap: 16px; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #e5e7eb; }
-                .logo-frame { height: 38px; display: flex; align-items: center; justify-content: center; }
-                .logo-frame img { max-height: 100%; max-width: 180px; object-fit: contain; }
-                .brand-separator { width: 1px; height: 24px; background-color: #e5e7eb; }
-                .brand-title-text { display: flex; flex-direction: column; }
-                .company-name { font-size: 1.2rem; font-weight: 700; color: #0f172a; letter-spacing: -0.015em;}
-                .app-subtitle { font-size: 0.75rem; color: #475569; text-transform: uppercase; letter-spacing: 0.05em; font-weight:600;}
-                .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-                .panel { padding: 20px; background: white; border: 1px solid #e5e7eb; border-radius: 8px; white-space: pre-wrap; line-height: 1.65; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); font-size: 0.975rem; }
-                .diff-added { background-color: rgba(34, 197, 94, 0.12); color: #166534; border-bottom: 1px solid rgba(34, 197, 94, 0.3); padding: 1px 2px; border-radius:2px; }
-                .diff-removed { background-color: rgba(239, 68, 68, 0.08); color: #991b1b; text-decoration: line-through; border-bottom: 1px solid rgba(239, 68, 68, 0.25); padding: 1px 2px; border-radius:2px; }
-                .diff-modified { background-color: rgba(234, 179, 8, 0.12); color: #854d0e; border-bottom: 2px dashed rgba(234, 179, 8, 0.3); padding: 1px 2px; border-radius:2px; }
-                .header-meta { margin-bottom: 24px; font-size: 0.85rem; color: #475569; background: #ffffff; padding: 12px 16px; border-radius: 6px; border: 1px solid #e5e7eb; display: inline-block; }
-            </style>
-        </head>
-        <body>
-            <div class="brand-header">
-                <div class="logo-frame">
-                    <img src="${currentLogoPath}" alt="Brand Logo">
-                </div>
-                <div class="brand-separator"></div>
-                <div class="brand-title-text">
-                    <span class="company-name">${currentCompanyName}</span>
-                    <span class="app-subtitle">Rich Text Verification Summary Audit Log</span>
-                </div>
-            </div>
-            <div class="header-meta">
-                <strong>Execution Constraints:</strong> &bull; 
-                Line Breaks Filtered: <span>${document.getElementById('replaceBreaksToggle').checked ? "Active" : "Disabled"}</span> &bull; 
-                Whitespace Normalization: <span>${document.getElementById('trimWhitespaceToggle').checked ? "Active" : "Disabled"}</span>
-            </div>
-            <div class="grid">
-                <div><h3 style="font-size:0.85rem; text-transform:uppercase; color:#475569; margin-bottom:8px; letter-spacing:0.05em;">Original Document Frame (Removals)</h3><div class="panel">${document.getElementById('diffOutputA').innerHTML}</div></div>
-                <div><h3 style="font-size:0.85rem; text-transform:uppercase; color:#475569; margin-bottom:8px; letter-spacing:0.05em;">Modified Document Frame (Additions)</h3><div class="panel">${document.getElementById('diffOutputB').innerHTML}</div></div>
-            </div>
-        </body>
-        </html>`;
-        
-        const blob = new Blob([reportData], { type: 'text/html' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = 'diff-branded-report.html';
-        link.click();
-    }
+    if (item.styles.bold)      span.style.fontWeight    = 'bold';
+    if (item.styles.italic)    span.style.fontStyle     = 'italic';
+    if (item.styles.underline) span.style.textDecoration = 'underline';
+    if (item.styles.fontSize)  span.style.fontSize      = item.styles.fontSize;
+    if (item.styles.fontFamily)span.style.fontFamily    = item.styles.fontFamily;
+    if (item.styles.color)     span.style.color         = item.styles.color;
+
+    if (type === 'added')    span.className = 'diff-added';
+    if (type === 'removed')  span.className = 'diff-removed';
+    if (type === 'modified') span.className = 'diff-modified';
+
+    return span;
+}
+
+function renderDiffViews(report) {
+    const outA = document.getElementById('diffOutputA');
+    const outB = document.getElementById('diffOutputB');
+    outA.innerHTML = '';
+    outB.innerHTML = '';
+    report.viewA.forEach(obj => outA.appendChild(buildSpan(obj)));
+    report.viewB.forEach(obj => outB.appendChild(buildSpan(obj)));
+}
+
+// =========================================================================
+// EXPORT
+// =========================================================================
+function exportHTML() {
+    const logoSrc   = document.getElementById('companyLogoElement').src;
+    const compName  = document.getElementById('companyNameElement').textContent;
+    const rb        = document.getElementById('replaceBreaksToggle').checked;
+    const tw        = document.getElementById('trimWhitespaceToggle').checked;
+
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Diff Report — ${compName}</title>
+<style>
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:40px;background:#f4f5f7;color:#111827;line-height:1.6;}
+  .header{display:flex;align-items:center;gap:14px;margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid #e4e6eb;}
+  .header img{max-height:28px;max-width:140px;object-fit:contain;}
+  .header .sep{width:1px;height:20px;background:#cdd0d8;}
+  .brand{font-size:.875rem;font-weight:600;color:#111827;}
+  .sub{font-size:.65rem;text-transform:uppercase;letter-spacing:.07em;color:#9ca3af;font-weight:500;}
+  .meta{font-size:.75rem;color:#6b7280;background:#fff;padding:10px 14px;border-radius:8px;border:1px solid #e4e6eb;margin-bottom:24px;display:flex;gap:16px;flex-wrap:wrap;}
+  .meta span{display:inline-flex;align-items:center;gap:4px;}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+  @media(max-width:700px){.grid{grid-template-columns:1fr;}}
+  .col-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#9ca3af;margin-bottom:8px;}
+  .panel{background:#fff;border:1px solid #e4e6eb;border-radius:12px;padding:18px 20px;white-space:pre-wrap;line-height:1.7;font-size:.9375rem;box-shadow:0 2px 6px rgba(0,0,0,.04);}
+  .diff-added{background:rgba(16,185,129,.1);color:#065f46;border-bottom:1.5px solid rgba(16,185,129,.35);border-radius:3px;padding:1px 3px;font-weight:500;}
+  .diff-removed{background:rgba(239,68,68,.08);color:#991b1b;text-decoration:line-through;border-bottom:1.5px solid rgba(239,68,68,.28);border-radius:3px;padding:1px 3px;}
+  .diff-modified{background:rgba(245,158,11,.1);color:#78350f;border-bottom:2px dashed rgba(245,158,11,.35);border-radius:3px;padding:1px 3px;font-weight:500;}
+</style>
+</head>
+<body>
+<div class="header">
+  <img src="${logoSrc}" alt="logo">
+  <div class="sep"></div>
+  <div><div class="brand">${compName}</div><div class="sub">Text Diff Report</div></div>
+</div>
+<div class="meta">
+  <span>Generated: ${new Date().toLocaleString()}</span>
+  <span>Normalize breaks: <strong>${rb ? 'On' : 'Off'}</strong></span>
+  <span>Trim whitespace: <strong>${tw ? 'On' : 'Off'}</strong></span>
+</div>
+<div class="grid">
+  <div><div class="col-label">A · Original (Removals)</div><div class="panel">${document.getElementById('diffOutputA').innerHTML}</div></div>
+  <div><div class="col-label">B · Modified (Additions)</div><div class="panel">${document.getElementById('diffOutputB').innerHTML}</div></div>
+</div>
+</body>
+</html>`;
+
+    const blob = new Blob([html], { type: 'text/html' });
+    const a    = document.createElement('a');
+    a.href     = URL.createObjectURL(blob);
+    a.download = 'diff-report.html';
+    a.click();
+}
 </script>
 </body>
 </html>
